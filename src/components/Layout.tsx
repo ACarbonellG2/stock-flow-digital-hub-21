@@ -8,7 +8,8 @@ import {
   BarChart3, 
   Settings, 
   Menu, 
-  X 
+  X,
+  ShoppingBag
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -57,7 +58,13 @@ const Layout = ({ children }: LayoutProps) => {
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
         <div className="flex flex-col flex-grow pt-5 bg-white border-r overflow-y-auto">
           <div className="flex items-center justify-center px-4 mb-6">
-            <h1 className="text-xl font-bold text-inventory-700">Inventario</h1>
+            <div className="flex items-center">
+              <ShoppingBag className="h-6 w-6 text-inventory-700 mr-2" />
+              <div>
+                <h1 className="text-lg font-bold text-inventory-700">Rep. Ulloa López</h1>
+                <p className="text-xs text-gray-500">Dotaciones Corporativas</p>
+              </div>
+            </div>
           </div>
           <Separator />
           <div className="flex flex-col space-y-1 px-3 py-4">
@@ -75,7 +82,13 @@ const Layout = ({ children }: LayoutProps) => {
         <Button variant="ghost" onClick={toggleMobileMenu} className="p-0 h-9 w-9">
           {showMobileMenu ? <X /> : <Menu />}
         </Button>
-        <h1 className="text-lg font-bold text-inventory-700 ml-4">Inventario</h1>
+        <div className="flex items-center ml-4">
+          <ShoppingBag className="h-5 w-5 text-inventory-700 mr-2" />
+          <div>
+            <h1 className="text-md font-bold text-inventory-700">Rep. Ulloa López</h1>
+            <p className="text-xs text-gray-500">Dotaciones Corporativas</p>
+          </div>
+        </div>
       </div>
       
       {/* Mobile Sidebar */}
@@ -83,7 +96,13 @@ const Layout = ({ children }: LayoutProps) => {
         <div className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-20">
           <div className="bg-white h-screen w-64 flex flex-col pt-5 z-30">
             <div className="flex items-center justify-between px-4 mb-6">
-              <h1 className="text-xl font-bold text-inventory-700">Inventario</h1>
+              <div className="flex items-center">
+                <ShoppingBag className="h-6 w-6 text-inventory-700 mr-2" />
+                <div>
+                  <h1 className="text-lg font-bold text-inventory-700">Rep. Ulloa López</h1>
+                  <p className="text-xs text-gray-500">Dotaciones Corporativas</p>
+                </div>
+              </div>
               <Button variant="ghost" onClick={toggleMobileMenu} className="p-0 h-9 w-9">
                 <X size={18} />
               </Button>

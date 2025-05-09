@@ -1,190 +1,163 @@
 
-import React, { useEffect, useState } from 'react';
-import { getProducts, getStockMovements, Product, StockMovement } from '@/lib/mockData';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
-} from 'recharts';
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Loader2 } from 'lucide-react';
 import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table';
+import { Label } from '@/components/ui/label';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Download, FileBar, FileBarChart, FilePieChart, Loader2 } from 'lucide-react';
+import { DateRangePicker } from '@/components/ui/date-picker';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+// Mock data for charts
+const stockData = [
+  { name: 'Camisas', value: 120 },
+  { name: 'Pantalones', value: 85 },
+  { name: 'Gorras', value: 230 },
+  { name: 'Chalecos', value: 60 },
+  { name: 'Overoles', value: 45 },
+];
+
+const movementData = [
+  { name: 'Ene', entradas: 65, salidas: 42 },
+  { name: 'Feb', entradas: 78, salidas: 53 },
+  { name: 'Mar', entradas: 52, salidas: 41 },
+  { name: 'Abr', entradas: 91, salidas: 78 },
+  { name: 'May', entradas: 45, salidas: 39 },
+  { name: 'Jun', entradas: 72, salidas: 60 },
+];
+
+const topProducts = [
+  { id: '1', name: 'Camisa Corporativa Azul', stock: 120, movements: 45 },
+  { id: '2', name: 'Pantalón de Trabajo Negro', stock: 85, movements: 38 },
+  { id: '3', name: 'Gorra Bordada', stock: 230, movements: 32 },
+  { id: '4', name: 'Chaleco Reflectivo', stock: 60, movements: 29 },
+  { id: '5', name: 'Overol Industrial', stock: 45, movements: 21 },
+];
+
+const lowStockProducts = [
+  { id: '5', name: 'Overol Industrial', stock: 45, min: 50 },
+  { id: '4', name: 'Chaleco Reflectivo', stock: 60, min: 70 },
+  { id: '6', name: 'Chaqueta Impermeable', stock: 25, min: 40 },
+  { id: '7', name: 'Uniforme Completo', stock: 18, min: 30 },
+];
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 const Reports = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [movements, setMovements] = useState<StockMovement[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [reportType, setReportType] = useState('stock');
   
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [productsData, movementsData] = await Promise.all([
-          getProducts(),
-          getStockMovements()
-        ]);
-        setProducts(productsData);
-        setMovements(movementsData);
-      } catch (error) {
-        console.error('Error fetching data for reports:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchData();
-  }, []);
-  
-  // Calculate data for charts
-  const getCategoryData = () => {
-    const categoryCounts: Record<string, number> = {};
-    products.forEach(product => {
-      if (categoryCounts[product.category]) {
-        categoryCounts[product.category] += product.quantity;
-      } else {
-        categoryCounts[product.category] = product.quantity;
-      }
-    });
-    
-    return Object.keys(categoryCounts).map(category => ({
-      name: category,
-      value: categoryCounts[category]
-    }));
+  const downloadReport = () => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      // In a real application, this would generate and download a file
+      alert('Reporte descargado');
+    }, 1500);
   };
-  
-  const getLocationData = () => {
-    const locationCounts: Record<string, number> = {};
-    products.forEach(product => {
-      if (locationCounts[product.location]) {
-        locationCounts[product.location] += product.quantity;
-      } else {
-        locationCounts[product.location] = product.quantity;
-      }
-    });
-    
-    return Object.keys(locationCounts).map(location => ({
-      location: location,
-      quantity: locationCounts[location]
-    }));
-  };
-  
-  const getInventoryValueByCategory = () => {
-    const categoryValues: Record<string, number> = {};
-    products.forEach(product => {
-      const value = product.quantity * product.price;
-      if (categoryValues[product.category]) {
-        categoryValues[product.category] += value;
-      } else {
-        categoryValues[product.category] = value;
-      }
-    });
-    
-    return Object.keys(categoryValues).map(category => ({
-      category: category,
-      value: categoryValues[category]
-    }));
-  };
-  
-  const getLowStockProducts = () => {
-    return products
-      .filter(product => product.quantity < 10)
-      .sort((a, b) => a.quantity - b.quantity);
-  };
-  
-  const COLORS = ['#4C51BF', '#667EEA', '#A3BFFA', '#C3DAFE', '#EBF4FF', '#5A67D8', '#434190'];
-  
-  const handleExportCSV = () => {
-    // Create CSV content
-    const headers = ['SKU', 'Nombre', 'Categoría', 'Cantidad', 'Precio', 'Ubicación', 'Última Actualización'];
-    const csvContent = [
-      headers.join(','),
-      ...products.map(product => [
-        product.sku,
-        `"${product.name.replace(/"/g, '""')}"`, // Escape quotes
-        `"${product.category}"`,
-        product.quantity,
-        product.price,
-        `"${product.location}"`,
-        product.lastUpdated
-      ].join(','))
-    ].join('\n');
-    
-    // Create a download link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `inventario-${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-  
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-inventory-600" />
-      </div>
-    );
-  }
   
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Reportes</h1>
-          <p className="text-gray-500">Analiza los datos de tu inventario</p>
-        </div>
-        <Button onClick={handleExportCSV}>
-          <Download className="mr-2 h-4 w-4" /> Exportar Inventario
-        </Button>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Reportes</h1>
+        <p className="text-gray-500">Analiza los datos de tu inventario</p>
       </div>
       
+      <Card>
+        <CardHeader>
+          <CardTitle>Filtros de Reporte</CardTitle>
+          <CardDescription>
+            Personaliza los parámetros para generar informes
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="reportType">Tipo de Reporte</Label>
+              <Select value={reportType} onValueChange={setReportType}>
+                <SelectTrigger id="reportType">
+                  <SelectValue placeholder="Selecciona un tipo de reporte" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="stock">Inventario Actual</SelectItem>
+                  <SelectItem value="movements">Movimientos</SelectItem>
+                  <SelectItem value="lowStock">Productos con Stock Bajo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Rango de Fechas</Label>
+              <DateRangePicker />
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <div className="flex space-x-2">
+            <Button variant="outline">
+              <FileBarChart className="h-4 w-4 mr-2" />
+              Vista Previa
+            </Button>
+          </div>
+          <Button onClick={downloadReport} disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Generando
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4 mr-2" />
+                Descargar Reporte
+              </>
+            )}
+          </Button>
+        </CardFooter>
+      </Card>
+      
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Category Distribution */}
+        {/* Stock Distribution Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Distribución por Categoría</CardTitle>
+            <CardTitle>Distribución de Inventario</CardTitle>
             <CardDescription>
-              Cantidad de productos por categoría
+              Distribución por categoría de productos
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
+            <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={getCategoryData()}
+                    data={stockData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
-                    {getCategoryData().map((entry, index) => (
+                    {stockData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => [`${value} unidades`, 'Cantidad']} />
+                  <Tooltip />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
@@ -192,153 +165,110 @@ const Reports = () => {
           </CardContent>
         </Card>
         
-        {/* Stock by Location */}
+        {/* Stock Movements Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Stock por Ubicación</CardTitle>
+            <CardTitle>Movimientos Mensuales</CardTitle>
             <CardDescription>
-              Cantidad de productos por ubicación
+              Entradas y salidas de inventario por mes
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
+            <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={getLocationData()}
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                  }}
-                >
+                <BarChart data={movementData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="location" />
+                  <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip formatter={(value) => [`${value} unidades`, 'Cantidad']} />
+                  <Tooltip />
                   <Legend />
-                  <Bar dataKey="quantity" name="Cantidad" fill="#667EEA" />
+                  <Bar dataKey="entradas" fill="#0088FE" name="Entradas" />
+                  <Bar dataKey="salidas" fill="#FF8042" name="Salidas" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </CardContent>
-        </Card>
-        
-        {/* Value by Category */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Valor de Inventario por Categoría</CardTitle>
-            <CardDescription>
-              Valor monetario total por categoría
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={getInventoryValueByCategory()}
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="category" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => [`$${value.toFixed(2)}`, 'Valor']} />
-                  <Legend />
-                  <Bar dataKey="value" name="Valor" fill="#5A67D8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Low Stock Alert */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Alerta de Stock Bajo</CardTitle>
-            <CardDescription>
-              Productos con menos de 10 unidades en stock
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {getLowStockProducts().length > 0 ? (
-              <div className="rounded-md border overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Producto</TableHead>
-                      <TableHead>Categoría</TableHead>
-                      <TableHead>Ubicación</TableHead>
-                      <TableHead className="text-right">Cantidad</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {getLowStockProducts().map((product) => (
-                      <TableRow key={product.id}>
-                        <TableCell className="font-medium">{product.name}</TableCell>
-                        <TableCell>{product.category}</TableCell>
-                        <TableCell>{product.location}</TableCell>
-                        <TableCell className="text-right">
-                          <span 
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                              product.quantity === 0
-                                ? 'bg-red-100 text-red-800'
-                                : product.quantity < 5
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}
-                          >
-                            {product.quantity}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-green-600 font-medium">
-                  No hay productos con stock bajo
-                </p>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>
       
       <Card>
         <CardHeader>
-          <CardTitle>Resumen del Inventario</CardTitle>
-          <CardDescription>
-            Estadísticas generales del inventario
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Productos Más Movidos</CardTitle>
+              <CardDescription>
+                Productos con mayor actividad en inventario
+              </CardDescription>
+            </div>
+            <Button variant="outline" size="sm">
+              <FilePieChart className="h-4 w-4 mr-2" />
+              Ver Completo
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-500">Total de Productos</h3>
-              <p className="text-2xl font-bold mt-1">{products.length}</p>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Producto</TableHead>
+                <TableHead>Stock Actual</TableHead>
+                <TableHead>Movimientos</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {topProducts.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell>{product.stock} unidades</TableCell>
+                  <TableCell>{product.movements} movimientos</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Productos con Stock Bajo</CardTitle>
+              <CardDescription>
+                Productos por debajo del nivel mínimo recomendado
+              </CardDescription>
             </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-500">Total de Unidades</h3>
-              <p className="text-2xl font-bold mt-1">
-                {products.reduce((sum, product) => sum + product.quantity, 0)}
-              </p>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-500">Valor del Inventario</h3>
-              <p className="text-2xl font-bold mt-1">
-                ${products
-                  .reduce((sum, product) => sum + product.price * product.quantity, 0)
-                  .toFixed(2)}
-              </p>
-            </div>
+            <Button variant="outline" size="sm">
+              <FileBar className="h-4 w-4 mr-2" />
+              Ver Completo
+            </Button>
           </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Producto</TableHead>
+                <TableHead>Stock Actual</TableHead>
+                <TableHead>Stock Mínimo</TableHead>
+                <TableHead>Estado</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {lowStockProducts.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell>{product.stock} unidades</TableCell>
+                  <TableCell>{product.min} unidades</TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <span className="h-2 w-2 rounded-full bg-red-500 mr-2" />
+                      Stock Bajo
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
