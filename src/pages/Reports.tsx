@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Label } from '@/components/ui/label';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Download, FileBar, FileBarChart, FilePieChart, Loader2 } from 'lucide-react';
+import { Download, FileText, FileBarChart, FilePieChart, Loader2 } from 'lucide-react';
 import { DateRangePicker } from '@/components/ui/date-picker';
 import {
   Select,
@@ -238,7 +237,7 @@ const Reports = () => {
               </CardDescription>
             </div>
             <Button variant="outline" size="sm">
-              <FileBar className="h-4 w-4 mr-2" />
+              <FileText className="h-4 w-4 mr-2" />
               Ver Completo
             </Button>
           </div>

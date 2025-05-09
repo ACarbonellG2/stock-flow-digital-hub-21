@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -198,6 +197,27 @@ const ProductDetail = () => {
         </div>
       </div>
       
+      {/* Mobile header */}
+      <div className="md:hidden bg-white w-full h-16 flex items-center px-4 border-b fixed top-0 left-0 right-0 z-10">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
+          <div className="flex space-x-2">
+            <Button variant="outline" onClick={() => window.print()}>
+              <Printer className="h-4 w-4 mr-2" />
+              Imprimir
+            </Button>
+            <Button onClick={() => navigate(`/products/${id}/edit`)}>
+              <Edit className="h-4 w-4 mr-2" />
+              Editar
+            </Button>
+            <Button variant="destructive" onClick={() => setShowDeleteAlert(true)}>
+              <Trash className="h-4 w-4 mr-2" />
+              Eliminar
+            </Button>
+          </div>
+        </div>
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Product Image and Info */}
         <Card className="md:col-span-1">
@@ -274,7 +294,7 @@ const ProductDetail = () => {
                 </Button>
               </DialogTrigger>
               <DialogContent>
-                {(close) => (
+                {({ close }) => (
                   <>
                     <DialogHeader>
                       <DialogTitle>Registrar Movimiento de Inventario</DialogTitle>
@@ -433,7 +453,7 @@ const ProductDetail = () => {
       
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
         <AlertDialogContent>
-          {(close) => (
+          {({ close }) => (
             <>
               <AlertDialogHeader>
                 <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
