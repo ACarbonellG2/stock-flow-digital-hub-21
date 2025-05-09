@@ -1,0 +1,293 @@
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { addProduct, categories, locations } from '@/lib/mockData';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+import { Loader2, Save } from 'lucide-react';
+
+const AddProduct = () => {
+  const navigate = useNavigate();
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    category: '',
+    quantity: 0,
+    price: 0,
+    location: '',
+    sku: '',
+  });
+  
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    
+    // Clear error when typing
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: '' });
+    }
+  };
+  
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData({ ...formData, [name]: value });
+    
+    // Clear error when selecting
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: '' });
+    }
+  };
+  
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value === '' ? 0 : Number(value) });
+    
+    // Clear error when typing
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: '' });
+    }
+  };
+  
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'El nombre del producto es obligatorio';
+    }
+    
+    if (!formData.category) {
+      newErrors.category = 'La categoría es obligatoria';
+    }
+    
+    if (formData.quantity < 0) {
+      newErrors.quantity = 'La cantidad no puede ser negativa';
+    }
+    
+    if (formData.price <= 0) {
+      newErrors.price = 'El precio debe ser mayor a cero';
+    }
+    
+    if (!formData.location) {
+      newErrors.location = 'La ubicación es obligatoria';
+    }
+    
+    if (!formData.sku.trim()) {
+      newErrors.sku = 'El SKU es obligatorio';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+    
+    setLoading(true);
+    try {
+      await addProduct(formData);
+      toast.success('Producto agregado exitosamente');
+      navigate('/products');
+    } catch (error) {
+      console.error('Error adding product:', error);
+      toast.error('Error al agregar el producto');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Agregar Producto</h1>
+        <p className="text-gray-500">Añade un nuevo producto al inventario</p>
+      </div>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Información del Producto</CardTitle>
+          <CardDescription>
+            Ingresa la información del nuevo producto
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="name" className={errors.name ? 'text-red-500' : ''}>
+                  Nombre del Producto *
+                </Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="Ingresa el nombre del producto"
+                  className={errors.name ? 'border-red-500' : ''}
+                />
+                {errors.name && (
+                  <p className="text-red-500 text-xs">{errors.name}</p>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="sku" className={errors.sku ? 'text-red-500' : ''}>
+                  SKU *
+                </Label>
+                <Input
+                  id="sku"
+                  name="sku"
+                  value={formData.sku}
+                  onChange={handleInputChange}
+                  placeholder="Ingresa el código SKU"
+                  className={errors.sku ? 'border-red-500' : ''}
+                />
+                {errors.sku && (
+                  <p className="text-red-500 text-xs">{errors.sku}</p>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="category" className={errors.category ? 'text-red-500' : ''}>
+                  Categoría *
+                </Label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) => handleSelectChange('category', value)}
+                >
+                  <SelectTrigger
+                    id="category"
+                    className={errors.category ? 'border-red-500' : ''}
+                  >
+                    <SelectValue placeholder="Selecciona una categoría" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="Otros">Otros</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.category && (
+                  <p className="text-red-500 text-xs">{errors.category}</p>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="location" className={errors.location ? 'text-red-500' : ''}>
+                  Ubicación *
+                </Label>
+                <Select
+                  value={formData.location}
+                  onValueChange={(value) => handleSelectChange('location', value)}
+                >
+                  <SelectTrigger
+                    id="location"
+                    className={errors.location ? 'border-red-500' : ''}
+                  >
+                    <SelectValue placeholder="Selecciona una ubicación" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.map((location) => (
+                      <SelectItem key={location} value={location}>
+                        {location}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="Otra Ubicación">Otra Ubicación</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.location && (
+                  <p className="text-red-500 text-xs">{errors.location}</p>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="quantity" className={errors.quantity ? 'text-red-500' : ''}>
+                  Cantidad *
+                </Label>
+                <Input
+                  id="quantity"
+                  name="quantity"
+                  type="number"
+                  min="0"
+                  value={formData.quantity}
+                  onChange={handleNumberChange}
+                  placeholder="Ingresa la cantidad"
+                  className={errors.quantity ? 'border-red-500' : ''}
+                />
+                {errors.quantity && (
+                  <p className="text-red-500 text-xs">{errors.quantity}</p>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="price" className={errors.price ? 'text-red-500' : ''}>
+                  Precio *
+                </Label>
+                <Input
+                  id="price"
+                  name="price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.price}
+                  onChange={handleNumberChange}
+                  placeholder="Ingresa el precio"
+                  className={errors.price ? 'border-red-500' : ''}
+                />
+                {errors.price && (
+                  <p className="text-red-500 text-xs">{errors.price}</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => navigate('/products')}
+                disabled={loading}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                type="submit"
+                className="bg-inventory-600 hover:bg-inventory-700"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Guardando
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Guardar Producto
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default AddProduct;
