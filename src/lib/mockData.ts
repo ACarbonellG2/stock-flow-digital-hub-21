@@ -1,4 +1,3 @@
-
 export interface Product {
   id: string;
   name: string;
@@ -23,102 +22,102 @@ export interface StockMovement {
 export const mockProducts: Product[] = [
   {
     id: "1",
-    name: "Laptop Dell XPS 13",
-    category: "Electronics",
-    quantity: 15,
-    price: 1299.99,
-    location: "Warehouse A",
-    sku: "DELL-XPS13-001",
+    name: "Camisa Corporativa Manga Larga",
+    category: "Camisas",
+    quantity: 120,
+    price: 45000,
+    location: "Bodega A",
+    sku: "CAM-ML-001",
     lastUpdated: "2025-05-08T14:30:00Z"
   },
   {
     id: "2",
-    name: "Office Chair Ergonomic",
-    category: "Furniture",
-    quantity: 25,
-    price: 249.99,
-    location: "Warehouse B",
-    sku: "FURN-CHAIR-002",
+    name: "Camisa Corporativa Manga Corta",
+    category: "Camisas",
+    quantity: 85,
+    price: 38000,
+    location: "Bodega A",
+    sku: "CAM-MC-002",
     lastUpdated: "2025-05-07T10:15:00Z"
   },
   {
     id: "3",
-    name: "Wireless Headphones",
-    category: "Electronics",
-    quantity: 50,
-    price: 89.99,
-    location: "Warehouse A",
-    sku: "ELEC-HEAD-003",
+    name: "Gorra Bordada Logo Empresarial",
+    category: "Gorras",
+    quantity: 200,
+    price: 22000,
+    location: "Bodega B",
+    sku: "GOR-BOR-003",
     lastUpdated: "2025-05-08T09:45:00Z"
   },
   {
     id: "4",
-    name: "Desk Lamp LED",
-    category: "Home",
-    quantity: 30,
-    price: 34.99,
-    location: "Warehouse C",
-    sku: "HOME-LAMP-004",
+    name: "Overol Industrial Denim",
+    category: "Overoles",
+    quantity: 45,
+    price: 85000,
+    location: "Bodega C",
+    sku: "OVE-DEN-004",
     lastUpdated: "2025-05-06T16:20:00Z"
   },
   {
     id: "5",
-    name: "Smartphone Case",
-    category: "Accessories",
-    quantity: 100,
-    price: 19.99,
-    location: "Warehouse A",
-    sku: "ACC-CASE-005",
+    name: "Delantal Cocina Profesional",
+    category: "Delantales",
+    quantity: 60,
+    price: 28000,
+    location: "Bodega B",
+    sku: "DEL-COC-005",
     lastUpdated: "2025-05-08T11:10:00Z"
   },
   {
     id: "6",
-    name: "Wireless Mouse",
-    category: "Electronics",
-    quantity: 45,
-    price: 29.99,
-    location: "Warehouse B",
-    sku: "ELEC-MOUSE-006",
+    name: "Chaleco Reflectivo Seguridad",
+    category: "Chalecos",
+    quantity: 75,
+    price: 32000,
+    location: "Bodega C",
+    sku: "CHA-REF-006",
     lastUpdated: "2025-05-07T14:50:00Z"
   },
   {
     id: "7",
-    name: "Notebook 200 Pages",
-    category: "Stationery",
-    quantity: 200,
-    price: 5.99,
-    location: "Warehouse C",
-    sku: "STAT-NOTE-007",
+    name: "Maleta Mochila Corporativa",
+    category: "Maletas",
+    quantity: 50,
+    price: 55000,
+    location: "Bodega D",
+    sku: "MAL-COR-007",
     lastUpdated: "2025-05-05T10:30:00Z"
   },
   {
     id: "8",
-    name: "Water Bottle 1L",
-    category: "Home",
-    quantity: 75,
-    price: 12.99,
-    location: "Warehouse A",
-    sku: "HOME-BOTTLE-008",
+    name: "Uniforme Completo Administrativo",
+    category: "Uniformes",
+    quantity: 30,
+    price: 120000,
+    location: "Bodega A",
+    sku: "UNI-ADM-008",
     lastUpdated: "2025-05-04T09:15:00Z"
   },
   {
     id: "9",
-    name: "External Hard Drive 1TB",
-    category: "Electronics",
-    quantity: 20,
-    price: 79.99,
-    location: "Warehouse B",
-    sku: "ELEC-HDD-009",
+    name: "Camiseta Polo Bordada",
+    category: "Camisetas",
+    quantity: 150,
+    price: 35000,
+    location: "Bodega B",
+    sku: "POL-BOR-009",
     lastUpdated: "2025-05-07T15:40:00Z"
   },
   {
     id: "10",
-    name: "Office Desk",
-    category: "Furniture",
-    quantity: 10,
-    price: 299.99,
-    location: "Warehouse C",
-    sku: "FURN-DESK-010",
+    name: "Chaqueta Corporativa Impermeable",
+    category: "Chaquetas",
+    quantity: 25,
+    price: 98000,
+    location: "Bodega D",
+    sku: "CHA-IMP-010",
     lastUpdated: "2025-05-03T13:20:00Z"
   }
 ];
@@ -129,41 +128,41 @@ export const mockStockMovements: StockMovement[] = [
     id: "1",
     productId: "1",
     type: "in",
-    quantity: 5,
+    quantity: 30,
     date: "2025-05-08T14:30:00Z",
-    notes: "Regular resupply"
+    notes: "Entrega de proveedor Textiles del Norte"
   },
   {
     id: "2",
     productId: "2",
     type: "out",
-    quantity: 2,
+    quantity: 15,
     date: "2025-05-07T15:45:00Z",
-    notes: "Customer order #12345"
+    notes: "Pedido Hotel Empresarial #HE-452"
   },
   {
     id: "3",
     productId: "3",
     type: "in",
-    quantity: 20,
+    quantity: 50,
     date: "2025-05-06T09:20:00Z",
-    notes: "New shipment arrived"
+    notes: "Nuevo lote de producción"
   },
   {
     id: "4",
     productId: "1",
     type: "out",
-    quantity: 1,
+    quantity: 10,
     date: "2025-05-05T16:10:00Z",
-    notes: "Internal use - IT department"
+    notes: "Pedido Constructora ABC #CA-789"
   },
   {
     id: "5",
     productId: "5",
     type: "in",
-    quantity: 50,
+    quantity: 25,
     date: "2025-05-04T11:05:00Z",
-    notes: "New stock"
+    notes: "Reposición de inventario"
   }
 ];
 

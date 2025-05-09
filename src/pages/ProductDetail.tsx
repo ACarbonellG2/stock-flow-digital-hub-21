@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -294,7 +295,7 @@ const ProductDetail = () => {
                 </Button>
               </DialogTrigger>
               <DialogContent>
-                {({ close }) => (
+                {(props) => (
                   <>
                     <DialogHeader>
                       <DialogTitle>Registrar Movimiento de Inventario</DialogTitle>
@@ -365,7 +366,7 @@ const ProductDetail = () => {
                         <Button type="button" variant="outline">Cancelar</Button>
                       </DialogClose>
                       <Button 
-                        onClick={() => handleStockMovement(close)}
+                        onClick={() => handleStockMovement(props.close)}
                         disabled={loading || stockMovementForm.quantity <= 0}
                         className={
                           stockMovementForm.type === 'entrada' 
@@ -453,7 +454,7 @@ const ProductDetail = () => {
       
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
         <AlertDialogContent>
-          {({ close }) => (
+          {(props) => (
             <>
               <AlertDialogHeader>
                 <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
@@ -462,7 +463,7 @@ const ProductDetail = () => {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => close()}>Cancelar</AlertDialogCancel>
+                <AlertDialogCancel onClick={() => props.close()}>Cancelar</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleDeleteProduct}
                   disabled={loading}
