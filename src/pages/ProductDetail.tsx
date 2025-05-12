@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -338,13 +337,14 @@ const ProductDetail = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="reference">Referencia</Label>
+                    <Label htmlFor="reference">Referencia <span className="text-red-500">*</span></Label>
                     <Input
                       id="reference"
                       name="reference"
                       placeholder="Ej: Orden #12345 o Compra INV-2025-001"
                       value={stockMovementForm.reference}
                       onChange={handleInputChange}
+                      required
                     />
                   </div>
                   
@@ -366,7 +366,7 @@ const ProductDetail = () => {
                   </DialogClose>
                   <Button 
                     onClick={handleStockMovement}
-                    disabled={loading || stockMovementForm.quantity <= 0}
+                    disabled={loading || stockMovementForm.quantity <= 0 || !stockMovementForm.reference.trim()}
                     className={
                       stockMovementForm.type === 'entrada' 
                         ? 'bg-green-600 hover:bg-green-700' 
