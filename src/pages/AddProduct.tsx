@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { addProduct, categories, locations } from '@/lib/mockData';
+import { addProduct, categories } from '@/lib/mockData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2, Save } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -24,14 +25,14 @@ const AddProduct = () => {
     category: '',
     quantity: 0,
     price: 0,
-    location: '',
+    description: '',
     sku: '',
   });
   
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     
@@ -77,10 +78,6 @@ const AddProduct = () => {
     
     if (formData.price <= 0) {
       newErrors.price = 'El precio debe ser mayor a cero';
-    }
-    
-    if (!formData.location) {
-      newErrors.location = 'La ubicación es obligatoria';
     }
     
     if (!formData.sku.trim()) {
@@ -188,32 +185,18 @@ const AddProduct = () => {
                 )}
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="location" className={errors.location ? 'text-red-500' : ''}>
-                  Ubicación *
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="description">
+                  Descripción
                 </Label>
-                <Select
-                  value={formData.location}
-                  onValueChange={(value) => handleSelectChange('location', value)}
-                >
-                  <SelectTrigger
-                    id="location"
-                    className={errors.location ? 'border-red-500' : ''}
-                  >
-                    <SelectValue placeholder="Selecciona una ubicación" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {locations.map((location) => (
-                      <SelectItem key={location} value={location}>
-                        {location}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="Otra Ubicación">Otra Ubicación</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.location && (
-                  <p className="text-red-500 text-xs">{errors.location}</p>
-                )}
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Ingresa una descripción del producto"
+                  rows={3}
+                />
               </div>
               
               <div className="space-y-2">

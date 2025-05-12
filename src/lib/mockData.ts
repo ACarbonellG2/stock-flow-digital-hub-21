@@ -4,7 +4,7 @@ export interface Product {
   category: string;
   quantity: number;
   price: number;
-  location: string;
+  description: string;
   sku: string;
   lastUpdated: string;
 }
@@ -29,7 +29,7 @@ export const mockProducts: Product[] = [
     category: "Camisas",
     quantity: 120,
     price: 45000,
-    location: "Bodega A",
+    description: "Camisa corporativa de manga larga con logo bordado",
     sku: "CAM-ML-001",
     lastUpdated: "2025-05-08T14:30:00Z"
   },
@@ -39,7 +39,7 @@ export const mockProducts: Product[] = [
     category: "Camisas",
     quantity: 85,
     price: 38000,
-    location: "Bodega A",
+    description: "Camisa corporativa de manga corta con logo estampado",
     sku: "CAM-MC-002",
     lastUpdated: "2025-05-07T10:15:00Z"
   },
@@ -49,7 +49,7 @@ export const mockProducts: Product[] = [
     category: "Gorras",
     quantity: 200,
     price: 22000,
-    location: "Bodega B",
+    description: "Gorra con logo empresarial bordado en alta calidad",
     sku: "GOR-BOR-003",
     lastUpdated: "2025-05-08T09:45:00Z"
   },
@@ -59,7 +59,7 @@ export const mockProducts: Product[] = [
     category: "Overoles",
     quantity: 45,
     price: 85000,
-    location: "Bodega C",
+    description: "Overol industrial resistente de material denim",
     sku: "OVE-DEN-004",
     lastUpdated: "2025-05-06T16:20:00Z"
   },
@@ -69,7 +69,7 @@ export const mockProducts: Product[] = [
     category: "Delantales",
     quantity: 60,
     price: 28000,
-    location: "Bodega B",
+    description: "Delantal de cocina profesional resistente a manchas",
     sku: "DEL-COC-005",
     lastUpdated: "2025-05-08T11:10:00Z"
   },
@@ -79,7 +79,7 @@ export const mockProducts: Product[] = [
     category: "Chalecos",
     quantity: 75,
     price: 32000,
-    location: "Bodega C",
+    description: "Chaleco reflectivo con tiras de alta visibilidad",
     sku: "CHA-REF-006",
     lastUpdated: "2025-05-07T14:50:00Z"
   },
@@ -89,7 +89,7 @@ export const mockProducts: Product[] = [
     category: "Maletas",
     quantity: 50,
     price: 55000,
-    location: "Bodega D",
+    description: "Mochila corporativa con compartimiento para laptop",
     sku: "MAL-COR-007",
     lastUpdated: "2025-05-05T10:30:00Z"
   },
@@ -99,7 +99,7 @@ export const mockProducts: Product[] = [
     category: "Uniformes",
     quantity: 30,
     price: 120000,
-    location: "Bodega A",
+    description: "Conjunto completo de uniforme administrativo",
     sku: "UNI-ADM-008",
     lastUpdated: "2025-05-04T09:15:00Z"
   },
@@ -109,7 +109,7 @@ export const mockProducts: Product[] = [
     category: "Camisetas",
     quantity: 150,
     price: 35000,
-    location: "Bodega B",
+    description: "Camiseta polo con logo empresarial bordado",
     sku: "POL-BOR-009",
     lastUpdated: "2025-05-07T15:40:00Z"
   },
@@ -119,7 +119,7 @@ export const mockProducts: Product[] = [
     category: "Chaquetas",
     quantity: 25,
     price: 98000,
-    location: "Bodega D",
+    description: "Chaqueta corporativa impermeable para uso exterior",
     sku: "CHA-IMP-010",
     lastUpdated: "2025-05-03T13:20:00Z"
   }
@@ -185,7 +185,6 @@ export const mockStockMovements: StockMovement[] = [
 ];
 
 export const categories = Array.from(new Set(mockProducts.map(p => p.category)));
-export const locations = Array.from(new Set(mockProducts.map(p => p.location)));
 
 // Simulated API functions
 let products = [...mockProducts];
@@ -278,7 +277,8 @@ export const searchProducts = (query: string) => {
   const results = products.filter(p => 
     p.name.toLowerCase().includes(lowercaseQuery) ||
     p.sku.toLowerCase().includes(lowercaseQuery) ||
-    p.category.toLowerCase().includes(lowercaseQuery)
+    p.category.toLowerCase().includes(lowercaseQuery) ||
+    p.description.toLowerCase().includes(lowercaseQuery)
   );
   
   return Promise.resolve(results);
@@ -286,12 +286,10 @@ export const searchProducts = (query: string) => {
 
 export const filterProducts = ({ 
   category, 
-  location, 
   minStock = 0,
   maxStock = Number.MAX_SAFE_INTEGER
 }: {
   category?: string;
-  location?: string;
   minStock?: number;
   maxStock?: number;
 }) => {
@@ -299,10 +297,6 @@ export const filterProducts = ({
   
   if (category) {
     filtered = filtered.filter(p => p.category === category);
-  }
-  
-  if (location) {
-    filtered = filtered.filter(p => p.location === location);
   }
   
   filtered = filtered.filter(p => p.quantity >= minStock && p.quantity <= maxStock);

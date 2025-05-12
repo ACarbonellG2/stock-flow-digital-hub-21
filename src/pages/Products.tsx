@@ -6,7 +6,6 @@ import {
   searchProducts, 
   filterProducts,
   categories,
-  locations,
   Product
 } from '@/lib/mockData';
 import { Input } from '@/components/ui/input';
@@ -41,7 +40,6 @@ const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('');
-  const [location, setLocation] = useState('');
   const [sortField, setSortField] = useState<keyof Product>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [loading, setLoading] = useState(true);
@@ -78,7 +76,7 @@ const Products = () => {
   const handleFilter = async () => {
     setLoading(true);
     try {
-      const data = await filterProducts({ category, location });
+      const data = await filterProducts({ category });
       setProducts(data);
     } catch (error) {
       console.error('Error filtering products:', error);
@@ -89,7 +87,6 @@ const Products = () => {
 
   const resetFilters = async () => {
     setCategory('');
-    setLocation('');
     setSearchQuery('');
     await loadProducts();
   };
@@ -134,7 +131,7 @@ const Products = () => {
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex w-full">
               <Input
-                placeholder="Buscar por nombre, SKU o categoría"
+                placeholder="Buscar por nombre, SKU, categoría o descripción"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
@@ -157,7 +154,7 @@ const Products = () => {
           </div>
 
           {showFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
                   Categoría
@@ -171,24 +168,6 @@ const Products = () => {
                     {categories.map((cat) => (
                       <SelectItem key={cat} value={cat}>
                         {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Ubicación
-                </label>
-                <Select value={location} onValueChange={setLocation}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todas las ubicaciones" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Todas las ubicaciones</SelectItem>
-                    {locations.map((loc) => (
-                      <SelectItem key={loc} value={loc}>
-                        {loc}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -261,7 +240,7 @@ const Products = () => {
                             )}
                           </div>
                         </TableHead>
-                        <TableHead>Ubicación</TableHead>
+                        <TableHead>Descripción</TableHead>
                         <TableHead className="text-right">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -287,7 +266,9 @@ const Products = () => {
                           <TableCell className="text-right">
                             ${product.price.toFixed(2)}
                           </TableCell>
-                          <TableCell>{product.location}</TableCell>
+                          <TableCell className="truncate max-w-[200px]">
+                            {product.description ? product.description.substring(0, 40) + (product.description.length > 40 ? '...' : '') : ''}
+                          </TableCell>
                           <TableCell className="text-right">
                             <Link to={`/products/${product.id}`}>
                               <Button variant="ghost" size="sm">
