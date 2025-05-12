@@ -1,6 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { 
+  getProductById,
+  getStockMovements,
+  deleteProduct,
+  addStockMovement
+} from '@/lib/mockData';
 import { 
   Card, 
   CardContent, 
@@ -57,64 +63,6 @@ import {
   AlertTriangle
 } from 'lucide-react';
 
-// Mock data
-const product = {
-  id: '1',
-  name: 'Camisa Corporativa Azul',
-  sku: 'CC-AZ-001',
-  description: 'Camisa manga larga de algodón para uniformes corporativos',
-  price: 45000,
-  cost: 28000,
-  stock: 120,
-  category: 'Camisas',
-  supplier: 'Textiles del Norte',
-  brand: 'UlloaCorel',
-  minStock: 30,
-  location: 'Bodega A - Estante 3',
-  image: 'https://images.unsplash.com/photo-1620012253295-c15cc3e65df4?auto=format&fit=crop&w=256',
-  createdAt: '2024-12-15',
-  updatedAt: '2025-05-01'
-};
-
-const stockMovements = [
-  {
-    id: '1',
-    reference: 'MOV-ENT-001',
-    date: '2025-05-01',
-    type: 'entrada',
-    quantity: 50,
-    supplierOrClient: 'Textiles del Norte',
-    notes: 'Reabastecimiento regular'
-  },
-  {
-    id: '2',
-    reference: 'MOV-SAL-001',
-    date: '2025-04-15',
-    type: 'salida',
-    quantity: 25,
-    supplierOrClient: 'Empresa Constructora ABC',
-    notes: 'Venta a Empresa Constructora ABC'
-  },
-  {
-    id: '3',
-    reference: 'MOV-ENT-002',
-    date: '2025-04-10',
-    type: 'entrada',
-    quantity: 30,
-    supplierOrClient: 'Textiles del Norte',
-    notes: 'Reabastecimiento urgente'
-  },
-  {
-    id: '4',
-    reference: 'MOV-SAL-002',
-    date: '2025-03-28',
-    type: 'salida',
-    quantity: 40,
-    supplierOrClient: 'Hotel Premium',
-    notes: 'Venta a Hotel Premium'
-  }
-];
-
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -128,6 +76,35 @@ const ProductDetail = () => {
   });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
+  const [product, setProduct] = useState<any>(null);
+  const [stockMovements, setStockMovements] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const loadProductData = async () => {
+      setIsLoading(true);
+      if (id) {
+        try {
+          const productData = await getProductById(id);
+          const movementsData = await getStockMovements(id);
+          
+          if (productData) {
+            setProduct(productData);
+          }
+          
+          setStockMovements(movementsData);
+        } catch (error) {
+          console.error('Error loading product data:', error);
+          toast.error('Error al cargar los datos del producto');
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    loadProductData();
+  }, [id]);
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setStockMovementForm({ ...stockMovementForm, [name]: value });
@@ -137,15 +114,36 @@ const ProductDetail = () => {
     setStockMovementForm({ ...stockMovementForm, type });
   };
   
-  const handleStockMovement = () => {
+  const handleStockMovement = async () => {
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      toast.success(
-        stockMovementForm.type === 'entrada' 
-          ? `Se agregaron ${stockMovementForm.quantity} unidades al inventario`
-          : `Se retiraron ${stockMovementForm.quantity} unidades del inventario`
-      );
+    try {
+      if (id) {
+        const moveType = stockMovementForm.type === 'entrada' ? 'in' : 'out';
+        const result = await addStockMovement({
+          productId: id,
+          productSku: product.sku,
+          type: moveType,
+          quantity: Number(stockMovementForm.quantity),
+          supplierOrClient: stockMovementForm.supplierOrClient,
+          notes: stockMovementForm.notes,
+        });
+        
+        toast.success(
+          stockMovementForm.type === 'entrada' 
+            ? `Se agregaron ${stockMovementForm.quantity} unidades al inventario`
+            : `Se retiraron ${stockMovementForm.quantity} unidades del inventario`
+        );
+        
+        // Reload product and stock movements
+        const updatedProduct = await getProductById(id);
+        const updatedMovements = await getStockMovements(id);
+        setProduct(updatedProduct);
+        setStockMovements(updatedMovements);
+      }
+    } catch (error) {
+      console.error('Error registering stock movement:', error);
+      toast.error('Error al registrar el movimiento de inventario');
+    } finally {
       setLoading(false);
       setIsDialogOpen(false);
       // Reset form
@@ -155,29 +153,70 @@ const ProductDetail = () => {
         supplierOrClient: '',
         notes: ''
       });
-    }, 1000);
+    }
   };
   
-  const handleDeleteProduct = () => {
+  const handleDeleteProduct = async () => {
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      if (id) {
+        const result = await deleteProduct(id);
+        if (result) {
+          toast.success('Producto eliminado correctamente');
+          navigate('/products');
+        } else {
+          toast.error('No se pudo eliminar el producto');
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error('Error al eliminar el producto');
+    } finally {
       setLoading(false);
       setShowDeleteAlert(false);
-      toast.success('Producto eliminado correctamente');
-      navigate('/products');
-    }, 1000);
+    }
   };
   
   const stockStatus = () => {
-    if (product.stock <= 0) {
+    if (!product) return null;
+    
+    if (product.quantity <= 0) {
       return <Badge variant="destructive">Sin Stock</Badge>;
-    } else if (product.stock <= product.minStock) {
+    } else if (product.quantity <= 30) { // Using 30 as default minimum stock
       return <Badge variant="outline" className="bg-orange-100 text-orange-800 hover:bg-orange-100">Stock Bajo</Badge>;
     } else {
       return <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">En Stock</Badge>;
     }
   };
+  
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-inventory-600" />
+      </div>
+    );
+  }
+  
+  if (!product) {
+    return (
+      <div className="text-center py-12">
+        <AlertTriangle className="mx-auto h-12 w-12 text-yellow-500" />
+        <h3 className="mt-2 text-lg font-medium text-gray-900">Producto no encontrado</h3>
+        <p className="mt-1 text-gray-500">
+          El producto que estás buscando no existe o ha sido eliminado.
+        </p>
+        <div className="mt-6">
+          <Button 
+            onClick={() => navigate('/products')}
+            variant="outline" 
+            className="mx-auto"
+          >
+            Volver a Productos
+          </Button>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -203,38 +242,13 @@ const ProductDetail = () => {
         </div>
       </div>
       
-      {/* Mobile header */}
-      <div className="md:hidden bg-white w-full h-16 flex items-center px-4 border-b fixed top-0 left-0 right-0 z-10">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => window.print()}>
-              <Printer className="h-4 w-4 mr-2" />
-              Imprimir
-            </Button>
-            <Button onClick={() => navigate(`/products/${id}/edit`)}>
-              <Edit className="h-4 w-4 mr-2" />
-              Editar
-            </Button>
-            <Button variant="destructive" onClick={() => setShowDeleteAlert(true)}>
-              <Trash className="h-4 w-4 mr-2" />
-              Eliminar
-            </Button>
-          </div>
-        </div>
-      </div>
-      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Product Image and Info */}
         <Card className="md:col-span-1">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center">
-              <div className="relative w-full h-64 mb-4 bg-gray-100 rounded-md overflow-hidden">
-                <img 
-                  src={product.image} 
-                  alt={product.name} 
-                  className="w-full h-full object-cover"
-                />
+              <div className="relative w-full h-64 mb-4 bg-gray-100 rounded-md flex justify-center items-center">
+                <Package className="h-24 w-24 text-gray-400" />
               </div>
               <div className="w-full mt-2 flex justify-center">
                 {stockStatus()}
@@ -259,36 +273,20 @@ const ProductDetail = () => {
                 <p className="mt-1">{product.category}</p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500">Marca</h3>
-                <p className="mt-1">{product.brand}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Proveedor</h3>
-                <p className="mt-1">{product.supplier}</p>
+                <h3 className="text-sm font-medium text-gray-500">Tipo de Producto</h3>
+                <p className="mt-1">{product.type}</p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-gray-500">Precio</h3>
                 <p className="mt-1">$ {product.price.toLocaleString()}</p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500">Costo</h3>
-                <p className="mt-1">$ {product.cost.toLocaleString()}</p>
-              </div>
-              <div>
                 <h3 className="text-sm font-medium text-gray-500">Existencias</h3>
-                <p className="mt-1">{product.stock} unidades</p>
+                <p className="mt-1">{product.quantity} unidades</p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500">Stock Mínimo</h3>
-                <p className="mt-1">{product.minStock} unidades</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Ubicación</h3>
-                <p className="mt-1">{product.location}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Actualizado</h3>
-                <p className="mt-1">{product.updatedAt}</p>
+                <h3 className="text-sm font-medium text-gray-500">Última Actualización</h3>
+                <p className="mt-1">{new Date(product.lastUpdated).toLocaleDateString()}</p>
               </div>
             </div>
           </CardContent>
@@ -417,55 +415,65 @@ const ProductDetail = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Referencia</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Cantidad</TableHead>
-                  <TableHead>{`Proveedor/Cliente`}</TableHead>
-                  <TableHead>Notas</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {stockMovements.map((movement) => (
-                  <TableRow key={movement.id}>
-                    <TableCell className="font-medium">
-                      {movement.reference}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-2 text-gray-400" />
-                        {movement.date}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={movement.type === 'entrada' ? 'outline' : 'secondary'} className={
-                        movement.type === 'entrada' 
-                          ? 'bg-green-100 text-green-800 hover:bg-green-100' 
-                          : 'bg-blue-100 text-blue-800 hover:bg-blue-100'
-                      }>
-                        {movement.type === 'entrada' ? (
-                          <div className="flex items-center">
-                            <ArrowUp className="h-3 w-3 mr-1" />
-                            Entrada
-                          </div>
-                        ) : (
-                          <div className="flex items-center">
-                            <ArrowDown className="h-3 w-3 mr-1" />
-                            Salida
-                          </div>
-                        )}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{movement.quantity} unidades</TableCell>
-                    <TableCell>{movement.supplierOrClient}</TableCell>
-                    <TableCell>{movement.notes}</TableCell>
+            {stockMovements.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Referencia</TableHead>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Cantidad</TableHead>
+                    <TableHead>{`Proveedor/Cliente`}</TableHead>
+                    <TableHead>Notas</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {stockMovements.map((movement) => (
+                    <TableRow key={movement.id}>
+                      <TableCell className="font-medium">
+                        {movement.reference}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-2 text-gray-400" />
+                          {new Date(movement.date).toLocaleDateString()}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={movement.type === 'in' ? 'outline' : 'secondary'} className={
+                          movement.type === 'in' 
+                            ? 'bg-green-100 text-green-800 hover:bg-green-100' 
+                            : 'bg-blue-100 text-blue-800 hover:bg-blue-100'
+                        }>
+                          {movement.type === 'in' ? (
+                            <div className="flex items-center">
+                              <ArrowUp className="h-3 w-3 mr-1" />
+                              Entrada
+                            </div>
+                          ) : (
+                            <div className="flex items-center">
+                              <ArrowDown className="h-3 w-3 mr-1" />
+                              Salida
+                            </div>
+                          )}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{movement.quantity} unidades</TableCell>
+                      <TableCell>{movement.supplierOrClient}</TableCell>
+                      <TableCell>{movement.notes}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-center py-12">
+                <Package className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-lg font-medium text-gray-900">No hay movimientos registrados</h3>
+                <p className="mt-1 text-gray-500">
+                  Este producto aún no tiene movimientos de inventario.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

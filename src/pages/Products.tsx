@@ -35,6 +35,7 @@ import {
   X, 
   ArrowUpDown 
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -218,6 +219,7 @@ const Products = () => {
                           </div>
                         </TableHead>
                         <TableHead>Categoría</TableHead>
+                        <TableHead>Tipo</TableHead>
                         <TableHead 
                           className="text-right cursor-pointer"
                           onClick={() => sortProducts('quantity')}
@@ -250,6 +252,11 @@ const Products = () => {
                           <TableCell className="font-medium">{product.sku}</TableCell>
                           <TableCell>{product.name}</TableCell>
                           <TableCell>{product.category}</TableCell>
+                          <TableCell>
+                            <Badge variant={product.type === 'Insumos' ? 'secondary' : 'outline'}>
+                              {product.type}
+                            </Badge>
+                          </TableCell>
                           <TableCell className="text-right">
                             <span 
                               className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -264,7 +271,7 @@ const Products = () => {
                             </span>
                           </TableCell>
                           <TableCell className="text-right">
-                            ${product.price.toFixed(2)}
+                            ${product.price.toLocaleString()}
                           </TableCell>
                           <TableCell className="truncate max-w-[200px]">
                             {product.description ? product.description.substring(0, 40) + (product.description.length > 40 ? '...' : '') : ''}

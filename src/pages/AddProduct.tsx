@@ -24,7 +24,7 @@ const AddProduct = () => {
   const [formData, setFormData] = useState({
     name: '',
     category: '',
-    type: 'Producto Terminado',
+    type: 'Producto Terminado' as 'Insumos' | 'Producto Terminado',
     quantity: 0,
     price: 0,
     description: '',
