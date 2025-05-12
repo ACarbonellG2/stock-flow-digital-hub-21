@@ -11,10 +11,13 @@ export interface Product {
 
 export interface StockMovement {
   id: string;
+  reference: string;
   productId: string;
+  productSku: string;
   type: 'in' | 'out';
   quantity: number;
   date: string;
+  supplierOrClient: string;
   notes: string;
 }
 
@@ -126,42 +129,57 @@ export const mockProducts: Product[] = [
 export const mockStockMovements: StockMovement[] = [
   {
     id: "1",
+    reference: "MOV-ENT-001",
     productId: "1",
+    productSku: "CAM-ML-001",
     type: "in",
     quantity: 30,
     date: "2025-05-08T14:30:00Z",
-    notes: "Entrega de proveedor Textiles del Norte"
+    supplierOrClient: "Textiles del Norte",
+    notes: "Entrega programada mensual"
   },
   {
     id: "2",
+    reference: "MOV-SAL-001",
     productId: "2",
+    productSku: "CAM-MC-002",
     type: "out",
     quantity: 15,
     date: "2025-05-07T15:45:00Z",
+    supplierOrClient: "Hotel Empresarial",
     notes: "Pedido Hotel Empresarial #HE-452"
   },
   {
     id: "3",
+    reference: "MOV-ENT-002",
     productId: "3",
+    productSku: "GOR-BOR-003",
     type: "in",
     quantity: 50,
     date: "2025-05-06T09:20:00Z",
+    supplierOrClient: "Manufacturas Express",
     notes: "Nuevo lote de producción"
   },
   {
     id: "4",
+    reference: "MOV-SAL-002",
     productId: "1",
+    productSku: "CAM-ML-001",
     type: "out",
     quantity: 10,
     date: "2025-05-05T16:10:00Z",
+    supplierOrClient: "Constructora ABC",
     notes: "Pedido Constructora ABC #CA-789"
   },
   {
     id: "5",
+    reference: "MOV-ENT-003",
     productId: "5",
+    productSku: "DEL-COC-005",
     type: "in",
     quantity: 25,
     date: "2025-05-04T11:05:00Z",
+    supplierOrClient: "Importadora Textil",
     notes: "Reposición de inventario"
   }
 ];
@@ -217,10 +235,22 @@ export const deleteProduct = (id: string) => {
   return Promise.resolve(false);
 };
 
-export const addStockMovement = (movement: Omit<StockMovement, 'id'>) => {
+export const addStockMovement = (movement: Omit<StockMovement, 'id' | 'reference' | 'date'>) => {
+  // Generate timestamp
+  const now = new Date();
+  const formattedDate = now.toISOString();
+  
+  // Generate reference number based on type and current count
+  const typePrefix = movement.type === 'in' ? 'ENT' : 'SAL';
+  const movCount = stockMovements.filter(m => m.type === movement.type).length + 1;
+  const paddedCount = movCount.toString().padStart(3, '0');
+  const reference = `MOV-${typePrefix}-${paddedCount}`;
+  
   const newMovement = {
     ...movement,
     id: (stockMovements.length + 1).toString(),
+    reference,
+    date: formattedDate,
   };
   stockMovements = [...stockMovements, newMovement];
   

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -78,34 +79,38 @@ const product = {
 const stockMovements = [
   {
     id: '1',
+    reference: 'MOV-ENT-001',
     date: '2025-05-01',
     type: 'entrada',
     quantity: 50,
-    reference: 'Compra INV-2025-042',
+    supplierOrClient: 'Textiles del Norte',
     notes: 'Reabastecimiento regular'
   },
   {
     id: '2',
+    reference: 'MOV-SAL-001',
     date: '2025-04-15',
     type: 'salida',
     quantity: 25,
-    reference: 'Orden #89721',
+    supplierOrClient: 'Empresa Constructora ABC',
     notes: 'Venta a Empresa Constructora ABC'
   },
   {
     id: '3',
+    reference: 'MOV-ENT-002',
     date: '2025-04-10',
     type: 'entrada',
     quantity: 30,
-    reference: 'Compra INV-2025-036',
+    supplierOrClient: 'Textiles del Norte',
     notes: 'Reabastecimiento urgente'
   },
   {
     id: '4',
+    reference: 'MOV-SAL-002',
     date: '2025-03-28',
     type: 'salida',
     quantity: 40,
-    reference: 'Orden #89605',
+    supplierOrClient: 'Hotel Premium',
     notes: 'Venta a Hotel Premium'
   }
 ];
@@ -118,7 +123,7 @@ const ProductDetail = () => {
   const [stockMovementForm, setStockMovementForm] = useState({
     type: 'entrada',
     quantity: 0,
-    reference: '',
+    supplierOrClient: '',
     notes: ''
   });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -147,7 +152,7 @@ const ProductDetail = () => {
       setStockMovementForm({
         type: 'entrada',
         quantity: 0,
-        reference: '',
+        supplierOrClient: '',
         notes: ''
       });
     }, 1000);
@@ -325,24 +330,29 @@ const ProductDetail = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="quantity">Cantidad</Label>
+                    <Label htmlFor="supplierOrClient">
+                      {stockMovementForm.type === 'entrada' ? 'Proveedor' : 'Cliente'} <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="supplierOrClient"
+                      name="supplierOrClient"
+                      placeholder={stockMovementForm.type === 'entrada' 
+                        ? "Nombre del proveedor" 
+                        : "Nombre del cliente"}
+                      value={stockMovementForm.supplierOrClient}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="quantity">Cantidad <span className="text-red-500">*</span></Label>
                     <Input
                       id="quantity"
                       name="quantity"
                       type="number"
                       min="1"
                       value={stockMovementForm.quantity}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="reference">Referencia <span className="text-red-500">*</span></Label>
-                    <Input
-                      id="reference"
-                      name="reference"
-                      placeholder="Ej: Orden #12345 o Compra INV-2025-001"
-                      value={stockMovementForm.reference}
                       onChange={handleInputChange}
                       required
                     />
@@ -358,6 +368,13 @@ const ProductDetail = () => {
                       onChange={handleInputChange}
                     />
                   </div>
+                  
+                  <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Información del movimiento:</span><br/>
+                      El sistema generará automáticamente el número de referencia y la fecha del movimiento.
+                    </p>
+                  </div>
                 </div>
                 
                 <DialogFooter>
@@ -366,7 +383,7 @@ const ProductDetail = () => {
                   </DialogClose>
                   <Button 
                     onClick={handleStockMovement}
-                    disabled={loading || stockMovementForm.quantity <= 0 || !stockMovementForm.reference.trim()}
+                    disabled={loading || stockMovementForm.quantity <= 0 || !stockMovementForm.supplierOrClient.trim()}
                     className={
                       stockMovementForm.type === 'entrada' 
                         ? 'bg-green-600 hover:bg-green-700' 
@@ -403,10 +420,11 @@ const ProductDetail = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Referencia</TableHead>
                   <TableHead>Fecha</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Cantidad</TableHead>
-                  <TableHead>Referencia</TableHead>
+                  <TableHead>{`Proveedor/Cliente`}</TableHead>
                   <TableHead>Notas</TableHead>
                 </TableRow>
               </TableHeader>
@@ -414,6 +432,9 @@ const ProductDetail = () => {
                 {stockMovements.map((movement) => (
                   <TableRow key={movement.id}>
                     <TableCell className="font-medium">
+                      {movement.reference}
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center">
                         <Clock className="h-4 w-4 mr-2 text-gray-400" />
                         {movement.date}
@@ -439,7 +460,7 @@ const ProductDetail = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>{movement.quantity} unidades</TableCell>
-                    <TableCell>{movement.reference}</TableCell>
+                    <TableCell>{movement.supplierOrClient}</TableCell>
                     <TableCell>{movement.notes}</TableCell>
                   </TableRow>
                 ))}
