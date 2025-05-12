@@ -1,7 +1,9 @@
+
 export interface Product {
   id: string;
   name: string;
   category: string;
+  type: 'Insumos' | 'Producto Terminado';  // New field for product type
   quantity: number;
   price: number;
   description: string;
@@ -27,6 +29,7 @@ export const mockProducts: Product[] = [
     id: "1",
     name: "Camisa Corporativa Manga Larga",
     category: "Camisas",
+    type: "Producto Terminado",
     quantity: 120,
     price: 45000,
     description: "Camisa corporativa de manga larga con logo bordado",
@@ -37,6 +40,7 @@ export const mockProducts: Product[] = [
     id: "2",
     name: "Camisa Corporativa Manga Corta",
     category: "Camisas",
+    type: "Producto Terminado",
     quantity: 85,
     price: 38000,
     description: "Camisa corporativa de manga corta con logo estampado",
@@ -47,6 +51,7 @@ export const mockProducts: Product[] = [
     id: "3",
     name: "Gorra Bordada Logo Empresarial",
     category: "Gorras",
+    type: "Producto Terminado",
     quantity: 200,
     price: 22000,
     description: "Gorra con logo empresarial bordado en alta calidad",
@@ -57,6 +62,7 @@ export const mockProducts: Product[] = [
     id: "4",
     name: "Overol Industrial Denim",
     category: "Overoles",
+    type: "Producto Terminado",
     quantity: 45,
     price: 85000,
     description: "Overol industrial resistente de material denim",
@@ -67,6 +73,7 @@ export const mockProducts: Product[] = [
     id: "5",
     name: "Delantal Cocina Profesional",
     category: "Delantales",
+    type: "Producto Terminado",
     quantity: 60,
     price: 28000,
     description: "Delantal de cocina profesional resistente a manchas",
@@ -77,6 +84,7 @@ export const mockProducts: Product[] = [
     id: "6",
     name: "Chaleco Reflectivo Seguridad",
     category: "Chalecos",
+    type: "Producto Terminado",
     quantity: 75,
     price: 32000,
     description: "Chaleco reflectivo con tiras de alta visibilidad",
@@ -87,6 +95,7 @@ export const mockProducts: Product[] = [
     id: "7",
     name: "Maleta Mochila Corporativa",
     category: "Maletas",
+    type: "Producto Terminado",
     quantity: 50,
     price: 55000,
     description: "Mochila corporativa con compartimiento para laptop",
@@ -97,6 +106,7 @@ export const mockProducts: Product[] = [
     id: "8",
     name: "Uniforme Completo Administrativo",
     category: "Uniformes",
+    type: "Producto Terminado",
     quantity: 30,
     price: 120000,
     description: "Conjunto completo de uniforme administrativo",
@@ -107,6 +117,7 @@ export const mockProducts: Product[] = [
     id: "9",
     name: "Camiseta Polo Bordada",
     category: "Camisetas",
+    type: "Producto Terminado",
     quantity: 150,
     price: 35000,
     description: "Camiseta polo con logo empresarial bordado",
@@ -117,6 +128,7 @@ export const mockProducts: Product[] = [
     id: "10",
     name: "Chaqueta Corporativa Impermeable",
     category: "Chaquetas",
+    type: "Insumos",
     quantity: 25,
     price: 98000,
     description: "Chaqueta corporativa impermeable para uso exterior",

@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2, Save } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ const AddProduct = () => {
   const [formData, setFormData] = useState({
     name: '',
     category: '',
+    type: 'Producto Terminado',
     quantity: 0,
     price: 0,
     description: '',
@@ -58,6 +60,15 @@ const AddProduct = () => {
     // Clear error when typing
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
+    }
+  };
+
+  const handleTypeChange = (value: string) => {
+    setFormData({ ...formData, type: value as 'Insumos' | 'Producto Terminado' });
+    
+    // Clear error when selecting
+    if (errors.type) {
+      setErrors({ ...errors, type: '' });
     }
   };
   
@@ -183,6 +194,26 @@ const AddProduct = () => {
                 {errors.category && (
                   <p className="text-red-500 text-xs">{errors.category}</p>
                 )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="type">
+                  Tipo de Producto *
+                </Label>
+                <RadioGroup 
+                  value={formData.type} 
+                  onValueChange={handleTypeChange}
+                  className="flex space-x-4 mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Insumos" id="insumos" />
+                    <Label htmlFor="insumos">Insumos</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Producto Terminado" id="terminado" />
+                    <Label htmlFor="terminado">Producto Terminado</Label>
+                  </div>
+                </RadioGroup>
               </div>
               
               <div className="space-y-2 md:col-span-2">
