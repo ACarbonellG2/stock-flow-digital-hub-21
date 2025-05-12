@@ -122,6 +122,7 @@ const ProductDetail = () => {
     reference: '',
     notes: ''
   });
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -132,7 +133,7 @@ const ProductDetail = () => {
     setStockMovementForm({ ...stockMovementForm, type });
   };
   
-  const handleStockMovement = (onClose: () => void) => {
+  const handleStockMovement = () => {
     setLoading(true);
     // Simulate API call
     setTimeout(() => {
@@ -142,7 +143,7 @@ const ProductDetail = () => {
           : `Se retiraron ${stockMovementForm.quantity} unidades del inventario`
       );
       setLoading(false);
-      onClose();
+      setIsDialogOpen(false);
       // Reset form
       setStockMovementForm({
         type: 'entrada',
@@ -288,107 +289,103 @@ const ProductDetail = () => {
             </div>
           </CardContent>
           <CardFooter className="flex justify-end">
-            <Dialog>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-inventory-600 hover:bg-inventory-700">
                   Registrar Movimiento
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                {(props) => (
-                  <>
-                    <DialogHeader>
-                      <DialogTitle>Registrar Movimiento de Inventario</DialogTitle>
-                      <DialogDescription>
-                        Registre entradas o salidas de este producto en el inventario.
-                      </DialogDescription>
-                    </DialogHeader>
-                    
-                    <div className="space-y-4 py-4">
-                      <div className="flex gap-4">
-                        <Button
-                          type="button"
-                          variant={stockMovementForm.type === 'entrada' ? 'default' : 'outline'}
-                          className={stockMovementForm.type === 'entrada' ? 'bg-green-600 hover:bg-green-700' : ''}
-                          onClick={() => handleTypeChange('entrada')}
-                        >
-                          <ArrowUp className="h-4 w-4 mr-2" />
-                          Entrada
-                        </Button>
-                        <Button
-                          type="button"
-                          variant={stockMovementForm.type === 'salida' ? 'default' : 'outline'}
-                          className={stockMovementForm.type === 'salida' ? 'bg-blue-600 hover:bg-blue-700' : ''}
-                          onClick={() => handleTypeChange('salida')}
-                        >
-                          <ArrowDown className="h-4 w-4 mr-2" />
-                          Salida
-                        </Button>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="quantity">Cantidad</Label>
-                        <Input
-                          id="quantity"
-                          name="quantity"
-                          type="number"
-                          min="1"
-                          value={stockMovementForm.quantity}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="reference">Referencia</Label>
-                        <Input
-                          id="reference"
-                          name="reference"
-                          placeholder="Ej: Orden #12345 o Compra INV-2025-001"
-                          value={stockMovementForm.reference}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="notes">Notas</Label>
-                        <Input
-                          id="notes"
-                          name="notes"
-                          placeholder="Detalles adicionales sobre este movimiento"
-                          value={stockMovementForm.notes}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                    </div>
-                    
-                    <DialogFooter>
-                      <DialogClose asChild>
-                        <Button type="button" variant="outline">Cancelar</Button>
-                      </DialogClose>
-                      <Button 
-                        onClick={() => handleStockMovement(props.close)}
-                        disabled={loading || stockMovementForm.quantity <= 0}
-                        className={
-                          stockMovementForm.type === 'entrada' 
-                            ? 'bg-green-600 hover:bg-green-700' 
-                            : 'bg-blue-600 hover:bg-blue-700'
-                        }
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Procesando
-                          </>
-                        ) : (
-                          <>
-                            {stockMovementForm.type === 'entrada' ? <ArrowUp className="h-4 w-4 mr-2" /> : <ArrowDown className="h-4 w-4 mr-2" />}
-                            {stockMovementForm.type === 'entrada' ? 'Registrar Entrada' : 'Registrar Salida'}
-                          </>
-                        )}
-                      </Button>
-                    </DialogFooter>
-                  </>
-                )}
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Registrar Movimiento de Inventario</DialogTitle>
+                  <DialogDescription>
+                    Registre entradas o salidas de este producto en el inventario.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4 py-4">
+                  <div className="flex gap-4">
+                    <Button
+                      type="button"
+                      variant={stockMovementForm.type === 'entrada' ? 'default' : 'outline'}
+                      className={stockMovementForm.type === 'entrada' ? 'bg-green-600 hover:bg-green-700' : ''}
+                      onClick={() => handleTypeChange('entrada')}
+                    >
+                      <ArrowUp className="h-4 w-4 mr-2" />
+                      Entrada
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={stockMovementForm.type === 'salida' ? 'default' : 'outline'}
+                      className={stockMovementForm.type === 'salida' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                      onClick={() => handleTypeChange('salida')}
+                    >
+                      <ArrowDown className="h-4 w-4 mr-2" />
+                      Salida
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="quantity">Cantidad</Label>
+                    <Input
+                      id="quantity"
+                      name="quantity"
+                      type="number"
+                      min="1"
+                      value={stockMovementForm.quantity}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="reference">Referencia</Label>
+                    <Input
+                      id="reference"
+                      name="reference"
+                      placeholder="Ej: Orden #12345 o Compra INV-2025-001"
+                      value={stockMovementForm.reference}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="notes">Notas</Label>
+                    <Input
+                      id="notes"
+                      name="notes"
+                      placeholder="Detalles adicionales sobre este movimiento"
+                      value={stockMovementForm.notes}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+                
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button type="button" variant="outline">Cancelar</Button>
+                  </DialogClose>
+                  <Button 
+                    onClick={handleStockMovement}
+                    disabled={loading || stockMovementForm.quantity <= 0}
+                    className={
+                      stockMovementForm.type === 'entrada' 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    }
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Procesando
+                      </>
+                    ) : (
+                      <>
+                        {stockMovementForm.type === 'entrada' ? <ArrowUp className="h-4 w-4 mr-2" /> : <ArrowDown className="h-4 w-4 mr-2" />}
+                        {stockMovementForm.type === 'entrada' ? 'Registrar Entrada' : 'Registrar Salida'}
+                      </>
+                    )}
+                  </Button>
+                </DialogFooter>
               </DialogContent>
             </Dialog>
           </CardFooter>
@@ -454,36 +451,32 @@ const ProductDetail = () => {
       
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
         <AlertDialogContent>
-          {(props) => (
-            <>
-              <AlertDialogHeader>
-                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Esta acción eliminará permanentemente el producto "{product.name}" y todos sus datos asociados.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => props.close()}>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDeleteProduct}
-                  disabled={loading}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Eliminando
-                    </>
-                  ) : (
-                    <>
-                      <Trash className="h-4 w-4 mr-2" />
-                      Eliminar
-                    </>
-                  )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </>
-          )}
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente el producto "{product.name}" y todos sus datos asociados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteProduct}
+              disabled={loading}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Eliminando
+                </>
+              ) : (
+                <>
+                  <Trash className="h-4 w-4 mr-2" />
+                  Eliminar
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
