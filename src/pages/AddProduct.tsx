@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addProduct, categories } from '@/lib/mockData';
@@ -25,8 +24,8 @@ const AddProduct = () => {
     name: '',
     category: '',
     type: 'Producto Terminado' as 'Insumos' | 'Producto Terminado',
-    quantity: 0,
-    price: 0,
+    quantity: '',
+    price: '',
     description: '',
     sku: '',
   });
@@ -74,16 +73,6 @@ const AddProduct = () => {
       setErrors({ ...errors, [name]: '' });
     }
   };
-  
-  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value === '' ? 0 : Number(value) });
-    
-    // Clear error when typing
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: '' });
-    }
-  };
 
   const handleTypeChange = (value: string) => {
     setFormData({ ...formData, type: value as 'Insumos' | 'Producto Terminado' });
@@ -105,11 +94,13 @@ const AddProduct = () => {
       newErrors.category = 'La categoría es obligatoria';
     }
     
-    if (formData.quantity < 0) {
-      newErrors.quantity = 'La cantidad no puede ser negativa';
+    const quantity = Number(formData.quantity);
+    if (isNaN(quantity) || quantity < 0) {
+      newErrors.quantity = 'La cantidad debe ser un número positivo';
     }
     
-    if (formData.price <= 0) {
+    const price = Number(formData.price);
+    if (isNaN(price) || price <= 0) {
       newErrors.price = 'El precio debe ser mayor a cero';
     }
     
@@ -128,7 +119,14 @@ const AddProduct = () => {
     
     setLoading(true);
     try {
-      await addProduct(formData);
+      // Convert string values to numbers for submission
+      const productData = {
+        ...formData,
+        quantity: Number(formData.quantity),
+        price: Number(formData.price)
+      };
+      
+      await addProduct(productData);
       toast.success('Producto agregado exitosamente');
       navigate('/products');
     } catch (error) {
@@ -262,7 +260,7 @@ const AddProduct = () => {
                   type="number"
                   min="0"
                   value={formData.quantity}
-                  onChange={handleNumberChange}
+                  onChange={handleInputChange}
                   placeholder="Ingresa la cantidad"
                   className={errors.quantity ? 'border-red-500' : ''}
                 />
@@ -282,7 +280,7 @@ const AddProduct = () => {
                   min="0"
                   step="0.01"
                   value={formData.price}
-                  onChange={handleNumberChange}
+                  onChange={handleInputChange}
                   placeholder="Ingresa el precio"
                   className={errors.price ? 'border-red-500' : ''}
                 />
