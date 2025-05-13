@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Label } from '@/components/ui/label';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Download, FileText, FileBarChart, FilePieChart, Loader2, Filter } from 'lucide-react';
+import { Download, FileText, FileBarChart, FilePieChart, Loader2, Filter, Clock } from 'lucide-react';
 import { DateRangePicker } from '@/components/ui/date-picker';
 import {
   Select,
@@ -23,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { mockStockMovements, mockProducts } from '@/lib/mockData';
 
 // Mock data for charts - split by product type
 const stockData = {
@@ -123,6 +123,42 @@ const lowStockProducts = {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
+// New data for recent movements
+const getRecentMovements = (productType) => {
+  // Filter the mockStockMovements based on product type
+  const filteredMovements = mockStockMovements.filter(movement => {
+    if (productType === 'all') return true;
+    
+    // Find the product for this movement
+    const product = mockProducts.find(p => p.id === movement.productId);
+    if (!product) return false;
+    
+    // Check if the product type matches the filter
+    return productType === 'insumos' 
+      ? product.type === 'Insumos'
+      : product.type === 'Producto Terminado';
+  });
+  
+  // Sort by date (newest first)
+  const sortedMovements = [...filteredMovements].sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  
+  // Get only the first 5 (most recent)
+  return sortedMovements.slice(0, 5).map(movement => {
+    const product = mockProducts.find(p => p.id === movement.productId) || { name: 'Producto Desconocido' };
+    return {
+      id: movement.id,
+      reference: movement.reference,
+      productName: product.name,
+      type: movement.type,
+      quantity: movement.quantity,
+      date: new Date(movement.date).toLocaleDateString(),
+      supplierOrClient: movement.supplierOrClient
+    };
+  });
+};
+
 const Reports = () => {
   const [loading, setLoading] = useState(false);
   const [reportType, setReportType] = useState('stock');
@@ -132,6 +168,7 @@ const Reports = () => {
   const [currentMovementData, setCurrentMovementData] = useState(movementData.all);
   const [currentTopProducts, setCurrentTopProducts] = useState(topProducts.all);
   const [currentLowStockProducts, setCurrentLowStockProducts] = useState(lowStockProducts.all);
+  const [recentMovements, setRecentMovements] = useState(getRecentMovements('all'));
   
   // Update data when product type changes
   useEffect(() => {
@@ -139,6 +176,7 @@ const Reports = () => {
     setCurrentMovementData(movementData[productType as keyof typeof movementData]);
     setCurrentTopProducts(topProducts[productType as keyof typeof topProducts]);
     setCurrentLowStockProducts(lowStockProducts[productType as keyof typeof lowStockProducts]);
+    setRecentMovements(getRecentMovements(productType));
   }, [productType]);
   
   const downloadReport = () => {
@@ -306,6 +344,57 @@ const Reports = () => {
             </Card>
           )}
         </div>
+      )}
+      
+      {/* Recent Movements Table - Show in movements or all report types */}
+      {(showMovementCharts || showAllCharts) && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Últimos Movimientos</CardTitle>
+                <CardDescription>
+                  Los 5 movimientos más recientes de {productType === 'insumos' ? 'insumos' : productType === 'productos' ? 'productos terminados' : 'inventario'}
+                </CardDescription>
+              </div>
+              <Button variant="outline" size="sm">
+                <Clock className="h-4 w-4 mr-2" />
+                Ver Historial Completo
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Referencia</TableHead>
+                  <TableHead>Producto</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Cantidad</TableHead>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Proveedor/Cliente</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentMovements.map((movement) => (
+                  <TableRow key={movement.id}>
+                    <TableCell className="font-medium">{movement.reference}</TableCell>
+                    <TableCell>{movement.productName}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
+                        <span className={`h-2 w-2 rounded-full ${movement.type === 'in' ? 'bg-green-500' : 'bg-red-500'} mr-2`} />
+                        {movement.type === 'in' ? 'Entrada' : 'Salida'}
+                      </div>
+                    </TableCell>
+                    <TableCell>{movement.quantity} unidades</TableCell>
+                    <TableCell>{movement.date}</TableCell>
+                    <TableCell>{movement.supplierOrClient}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
       
       {/* Productos Más Movidos - Show in stock, movements, or all report types */}
