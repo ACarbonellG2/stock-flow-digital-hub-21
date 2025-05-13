@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addProduct, categories } from '@/lib/mockData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,6 +33,28 @@ const AddProduct = () => {
   
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [filteredCategories, setFilteredCategories] = useState<string[]>(categories);
+  
+  // Filter categories based on type selection
+  useEffect(() => {
+    // Define which categories belong to which type
+    const insumoCategories = ["Telas", "Botones", "Cremalleras", "Caucho", "Lonas"];
+    const productoCategories = categories.filter(cat => !insumoCategories.includes(cat));
+    
+    if (formData.type === 'Insumos') {
+      setFilteredCategories(insumoCategories);
+      // Reset category if current selection doesn't belong to the new type
+      if (!insumoCategories.includes(formData.category)) {
+        setFormData(prev => ({ ...prev, category: '' }));
+      }
+    } else {
+      setFilteredCategories(productoCategories);
+      // Reset category if current selection doesn't belong to the new type
+      if (insumoCategories.includes(formData.category)) {
+        setFormData(prev => ({ ...prev, category: '' }));
+      }
+    }
+  }, [formData.type]);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -169,34 +191,6 @@ const AddProduct = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="category" className={errors.category ? 'text-red-500' : ''}>
-                  Categoría *
-                </Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) => handleSelectChange('category', value)}
-                >
-                  <SelectTrigger
-                    id="category"
-                    className={errors.category ? 'border-red-500' : ''}
-                  >
-                    <SelectValue placeholder="Selecciona una categoría" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="Otros">Otros</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.category && (
-                  <p className="text-red-500 text-xs">{errors.category}</p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
                 <Label htmlFor="type">
                   Tipo de Producto *
                 </Label>
@@ -214,6 +208,34 @@ const AddProduct = () => {
                     <Label htmlFor="terminado">Producto Terminado</Label>
                   </div>
                 </RadioGroup>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="category" className={errors.category ? 'text-red-500' : ''}>
+                  Categoría *
+                </Label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) => handleSelectChange('category', value)}
+                >
+                  <SelectTrigger
+                    id="category"
+                    className={errors.category ? 'border-red-500' : ''}
+                  >
+                    <SelectValue placeholder="Selecciona una categoría" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredCategories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="Otros">Otros</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.category && (
+                  <p className="text-red-500 text-xs">{errors.category}</p>
+                )}
               </div>
               
               <div className="space-y-2 md:col-span-2">

@@ -1,4 +1,3 @@
-
 export interface Product {
   id: string;
   name: string;
@@ -128,12 +127,67 @@ export const mockProducts: Product[] = [
     id: "10",
     name: "Chaqueta Corporativa Impermeable",
     category: "Chaquetas",
-    type: "Insumos",
+    type: "Producto Terminado",
     quantity: 25,
     price: 98000,
     description: "Chaqueta corporativa impermeable para uso exterior",
     sku: "CHA-IMP-010",
     lastUpdated: "2025-05-03T13:20:00Z"
+  },
+  {
+    id: "11",
+    name: "Tela Algodón Premium",
+    category: "Telas",
+    type: "Insumos",
+    quantity: 500,
+    price: 15000,
+    description: "Tela de algodón de alta calidad para camisas",
+    sku: "TEL-ALG-011",
+    lastUpdated: "2025-05-02T11:20:00Z"
+  },
+  {
+    id: "12",
+    name: "Botones Plásticos Negros",
+    category: "Botones",
+    type: "Insumos",
+    quantity: 1000,
+    price: 200,
+    description: "Botones plásticos negros de 1cm de diámetro",
+    sku: "BOT-PLA-012",
+    lastUpdated: "2025-05-01T09:45:00Z"
+  },
+  {
+    id: "13",
+    name: "Cremallera Metálica 20cm",
+    category: "Cremalleras",
+    type: "Insumos",
+    quantity: 300,
+    price: 1500,
+    description: "Cremalleras metálicas de 20cm para chaquetas",
+    sku: "CRE-MET-013",
+    lastUpdated: "2025-04-30T14:30:00Z"
+  },
+  {
+    id: "14",
+    name: "Lámina de Caucho 2mm",
+    category: "Caucho",
+    type: "Insumos",
+    quantity: 50,
+    price: 18000,
+    description: "Láminas de caucho de 2mm para suelas",
+    sku: "CAU-LAM-014",
+    lastUpdated: "2025-04-29T10:15:00Z"
+  },
+  {
+    id: "15",
+    name: "Lona Impermeable Azul",
+    category: "Lonas",
+    type: "Insumos",
+    quantity: 100,
+    price: 22000,
+    description: "Lona impermeable azul para maletas y mochilas",
+    sku: "LON-IMP-015",
+    lastUpdated: "2025-04-28T16:20:00Z"
   }
 ];
 
@@ -196,7 +250,25 @@ export const mockStockMovements: StockMovement[] = [
   }
 ];
 
-export const categories = Array.from(new Set(mockProducts.map(p => p.category)));
+// Define explicitly the categories array to include the new insumos categories
+export const categories = [
+  // Productos Terminados
+  "Camisas", 
+  "Gorras", 
+  "Overoles", 
+  "Delantales", 
+  "Chalecos", 
+  "Maletas", 
+  "Uniformes", 
+  "Camisetas", 
+  "Chaquetas",
+  // Insumos
+  "Telas",
+  "Botones",
+  "Cremalleras", 
+  "Caucho",
+  "Lonas"
+];
 
 // Simulated API functions
 let products = [...mockProducts];
