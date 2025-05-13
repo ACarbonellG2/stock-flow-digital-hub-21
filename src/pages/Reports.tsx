@@ -151,6 +151,12 @@ const Reports = () => {
     }, 1500);
   };
   
+  // Determine which report sections to show based on reportType
+  const showStockCharts = reportType === 'stock';
+  const showMovementCharts = reportType === 'movements';
+  const showLowStockTables = reportType === 'lowStock';
+  const showAllCharts = reportType === 'all';
+
   return (
     <div className="space-y-6">
       <div>
@@ -177,6 +183,7 @@ const Reports = () => {
                   <SelectItem value="stock">Inventario Actual</SelectItem>
                   <SelectItem value="movements">Movimientos</SelectItem>
                   <SelectItem value="lowStock">Productos con Stock Bajo</SelectItem>
+                  <SelectItem value="all">Todos los Reportes</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -236,147 +243,157 @@ const Reports = () => {
         </CardFooter>
       </Card>
       
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Stock Distribution Chart */}
+      {/* Stock Distribution Chart - Only show when reportType is stock or all */}
+      {(showStockCharts || showAllCharts) && (
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Distribución de Inventario</CardTitle>
+              <CardDescription>
+                Distribución por categoría de {productType === 'insumos' ? 'insumos' : productType === 'productos' ? 'productos terminados' : 'productos'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={currentStockData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {currentStockData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Stock Movements Chart - Only show when reportType is movements or all */}
+          {(showMovementCharts || showAllCharts) && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Movimientos Mensuales</CardTitle>
+                <CardDescription>
+                  Entradas y salidas de {productType === 'insumos' ? 'insumos' : productType === 'productos' ? 'productos terminados' : 'inventario'} por mes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={currentMovementData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="entradas" fill="#0088FE" name="Entradas" />
+                      <Bar dataKey="salidas" fill="#FF8042" name="Salidas" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+      
+      {/* Productos Más Movidos - Show in stock, movements, or all report types */}
+      {(showStockCharts || showMovementCharts || showAllCharts) && (
         <Card>
           <CardHeader>
-            <CardTitle>Distribución de Inventario</CardTitle>
-            <CardDescription>
-              Distribución por categoría de {productType === 'insumos' ? 'insumos' : productType === 'productos' ? 'productos terminados' : 'productos'}
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Productos Más Movidos</CardTitle>
+                <CardDescription>
+                  {productType === 'insumos' ? 'Insumos' : productType === 'productos' ? 'Productos terminados' : 'Productos'} con mayor actividad en inventario
+                </CardDescription>
+              </div>
+              <Button variant="outline" size="sm">
+                <FilePieChart className="h-4 w-4 mr-2" />
+                Ver Completo
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={currentStockData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {currentStockData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Producto</TableHead>
+                  <TableHead>Stock Actual</TableHead>
+                  <TableHead>Movimientos</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {currentTopProducts.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell>{product.stock} unidades</TableCell>
+                    <TableCell>{product.movements} movimientos</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
-        
-        {/* Stock Movements Chart */}
+      )}
+      
+      {/* Productos con Stock Bajo - Only show when reportType is lowStock or all */}
+      {(showLowStockTables || showAllCharts) && (
         <Card>
           <CardHeader>
-            <CardTitle>Movimientos Mensuales</CardTitle>
-            <CardDescription>
-              Entradas y salidas de {productType === 'insumos' ? 'insumos' : productType === 'productos' ? 'productos terminados' : 'inventario'} por mes
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Productos con Stock Bajo</CardTitle>
+                <CardDescription>
+                  {productType === 'insumos' ? 'Insumos' : productType === 'productos' ? 'Productos terminados' : 'Productos'} por debajo del nivel mínimo recomendado
+                </CardDescription>
+              </div>
+              <Button variant="outline" size="sm">
+                <FileText className="h-4 w-4 mr-2" />
+                Ver Completo
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={currentMovementData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="entradas" fill="#0088FE" name="Entradas" />
-                  <Bar dataKey="salidas" fill="#FF8042" name="Salidas" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Producto</TableHead>
+                  <TableHead>Stock Actual</TableHead>
+                  <TableHead>Stock Mínimo</TableHead>
+                  <TableHead>Estado</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {currentLowStockProducts.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell>{product.stock} unidades</TableCell>
+                    <TableCell>{product.min} unidades</TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
+                        <span className="h-2 w-2 rounded-full bg-red-500 mr-2" />
+                        Stock Bajo
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
-      </div>
-      
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Productos Más Movidos</CardTitle>
-              <CardDescription>
-                {productType === 'insumos' ? 'Insumos' : productType === 'productos' ? 'Productos terminados' : 'Productos'} con mayor actividad en inventario
-              </CardDescription>
-            </div>
-            <Button variant="outline" size="sm">
-              <FilePieChart className="h-4 w-4 mr-2" />
-              Ver Completo
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Producto</TableHead>
-                <TableHead>Stock Actual</TableHead>
-                <TableHead>Movimientos</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentTopProducts.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell className="font-medium">{product.name}</TableCell>
-                  <TableCell>{product.stock} unidades</TableCell>
-                  <TableCell>{product.movements} movimientos</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Productos con Stock Bajo</CardTitle>
-              <CardDescription>
-                {productType === 'insumos' ? 'Insumos' : productType === 'productos' ? 'Productos terminados' : 'Productos'} por debajo del nivel mínimo recomendado
-              </CardDescription>
-            </div>
-            <Button variant="outline" size="sm">
-              <FileText className="h-4 w-4 mr-2" />
-              Ver Completo
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Producto</TableHead>
-                <TableHead>Stock Actual</TableHead>
-                <TableHead>Stock Mínimo</TableHead>
-                <TableHead>Estado</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentLowStockProducts.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell className="font-medium">{product.name}</TableCell>
-                  <TableCell>{product.stock} unidades</TableCell>
-                  <TableCell>{product.min} unidades</TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <span className="h-2 w-2 rounded-full bg-red-500 mr-2" />
-                      Stock Bajo
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      )}
     </div>
   );
 };
