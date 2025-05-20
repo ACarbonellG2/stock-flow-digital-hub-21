@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -124,11 +123,11 @@ const lowStockProducts = {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
-// New data for recent movements
+// New data for recent movements with updated clientId handling
 const getRecentMovements = (productType, clientId) => {
   // Filter the mockStockMovements based on product type and client
   const filteredMovements = mockStockMovements.filter(movement => {
-    if (productType === 'all' && !clientId) return true;
+    if (productType === 'all' && (!clientId || clientId === 'all-clients')) return true;
     
     // Find the product for this movement
     const product = mockProducts.find(p => p.id === movement.productId);
@@ -138,7 +137,7 @@ const getRecentMovements = (productType, clientId) => {
     const typeMatches = productType === 'all' || 
       (productType === 'insumos' ? product.type === 'Insumos' : product.type === 'Producto Terminado');
     
-    const clientMatches = !clientId || product.clientId === clientId;
+    const clientMatches = !clientId || clientId === 'all-clients' || product.clientId === clientId;
     
     return typeMatches && clientMatches;
   });
@@ -163,9 +162,9 @@ const getRecentMovements = (productType, clientId) => {
   });
 };
 
-// Function to filter data by client
+// Function to filter data by client with updated clientId handling
 const filterDataByClient = (data, clientId, type) => {
-  if (!clientId) return data[type];
+  if (!clientId || clientId === 'all-clients') return data[type];
   
   // For chart data, we need to recalculate based on products that belong to this client
   if (type === 'all' || type === 'insumos' || type === 'productos') {
@@ -212,15 +211,15 @@ const Reports = () => {
   const [loading, setLoading] = useState(false);
   const [reportType, setReportType] = useState('stock');
   const [productType, setProductType] = useState('all');
-  const [clientId, setClientId] = useState('');
+  const [clientId, setClientId] = useState('all-clients');
   
   const [currentStockData, setCurrentStockData] = useState(stockData.all);
   const [currentMovementData, setCurrentMovementData] = useState(movementData.all);
   const [currentTopProducts, setCurrentTopProducts] = useState(topProducts.all);
   const [currentLowStockProducts, setCurrentLowStockProducts] = useState(lowStockProducts.all);
-  const [recentMovements, setRecentMovements] = useState(getRecentMovements('all', ''));
+  const [recentMovements, setRecentMovements] = useState(getRecentMovements('all', 'all-clients'));
   
-  // Update data when product type changes
+  // Update data when product type or client changes
   useEffect(() => {
     setCurrentStockData(filterDataByClient(stockData, clientId, productType));
     setCurrentMovementData(filterDataByClient(movementData, clientId, productType));
@@ -303,7 +302,7 @@ const Reports = () => {
               <DateRangePicker />
             </div>
             
-            {/* Nuevo selector de cliente */}
+            {/* Client selector with fixed empty value */}
             <div className="space-y-2">
               <Label htmlFor="clientSelect">Cliente</Label>
               <Select value={clientId} onValueChange={setClientId}>
@@ -311,7 +310,7 @@ const Reports = () => {
                   <SelectValue placeholder="Todos los Clientes" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos los Clientes</SelectItem>
+                  <SelectItem value="all-clients">Todos los Clientes</SelectItem>
                   {mockCompanies.map((company) => (
                     <SelectItem key={company.id} value={company.id}>
                       {company.name}
