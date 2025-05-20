@@ -276,7 +276,7 @@ const AddProduct = () => {
                       </SelectItem>
                     ) : (
                       <>
-                        <SelectItem value="">Sin asociar a cliente</SelectItem>
+                        <SelectItem value="no-client">Sin asociar a cliente</SelectItem>
                         {companies.map((company) => (
                           <SelectItem key={company.id} value={company.id}>
                             {company.name}
