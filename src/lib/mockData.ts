@@ -1,3 +1,4 @@
+
 export interface Product {
   id: string;
   name: string;
@@ -21,6 +22,9 @@ export interface StockMovement {
   supplierOrClient: string;
   notes: string;
 }
+
+// Define product types
+export const types = ['Insumos', 'Producto Terminado'];
 
 // Mock products data
 export const mockProducts: Product[] = [

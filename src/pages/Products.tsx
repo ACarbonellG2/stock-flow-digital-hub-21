@@ -88,10 +88,16 @@ const Products = () => {
   const handleFilter = async () => {
     setLoading(true);
     try {
-      const data = await filterProducts({ category, type: productType });
+      // Only pass category to filterProducts as it doesn't accept productType directly
+      const data = await filterProducts({ category });
+      
+      // Apply type filter client-side
+      let filteredData = [...data];
+      if (productType) {
+        filteredData = filteredData.filter(product => product.type === productType);
+      }
       
       // Apply client filter (this would be handled by the backend in a real app)
-      let filteredData = [...data];
       if (client) {
         // This is a mock client filter since our backend doesn't support it yet
         // In a real app, this would be handled by the backend
