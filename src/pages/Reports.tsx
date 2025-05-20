@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -123,7 +124,7 @@ const lowStockProducts = {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
-// New data for recent movements with updated clientId handling
+// Función para obtener movimientos recientes
 const getRecentMovements = (productType, clientId) => {
   // Filter the mockStockMovements based on product type and client
   const filteredMovements = mockStockMovements.filter(movement => {
@@ -162,48 +163,57 @@ const getRecentMovements = (productType, clientId) => {
   });
 };
 
-// Function to filter data by client with updated clientId handling
+// Función mejorada para filtrar datos por cliente y tipo de producto
 const filterDataByClient = (data, clientId, type) => {
-  if (!clientId || clientId === 'all-clients') return data[type];
-  
-  // For chart data, we need to recalculate based on products that belong to this client
-  if (type === 'all' || type === 'insumos' || type === 'productos') {
-    const clientProducts = mockProducts.filter(p => p.clientId === clientId);
-    
-    if (data === stockData) {
-      // Re-calculate stock distribution for this client
-      const categories = [...new Set(clientProducts.map(p => p.category))];
-      return categories.map(category => {
-        const productsInCategory = clientProducts.filter(p => p.category === category);
-        const totalQuantity = productsInCategory.reduce((sum, p) => sum + p.quantity, 0);
-        return { name: category, value: totalQuantity };
-      });
-    } else if (data === topProducts) {
-      // Return top products for this client
-      return clientProducts
-        .map(p => {
-          const movements = mockStockMovements.filter(m => m.productId === p.id).length;
-          return { id: p.id, name: p.name, stock: p.quantity, movements };
-        })
-        .sort((a, b) => b.movements - a.movements)
-        .slice(0, 5);
-    } else if (data === lowStockProducts) {
-      // Return low stock products for this client
-      // We're simulating minimum stock levels based on current quantity
-      return clientProducts
-        .filter(p => p.quantity < 50) // Just an example threshold
-        .map(p => ({ 
-          id: p.id, 
-          name: p.name, 
-          stock: p.quantity, 
-          min: Math.round(p.quantity * 1.2) // Just a simple calculation for demonstration
-        }))
-        .slice(0, 4);
-    }
+  if (!clientId || clientId === 'all-clients') {
+    // Si no hay cliente seleccionado, devuelve los datos según el tipo (all, insumos, productos)
+    return data[type];
   }
   
-  // For movement data, we'll just return the original data as a simplification
-  // In a real app, this would be filtered by client
+  // Para datos de gráficos, necesitamos recalcular basado en productos que pertenecen a este cliente
+  const clientProducts = mockProducts.filter(p => p.clientId === clientId);
+  
+  // Filtrar también por tipo de producto si no es 'all'
+  const filteredProducts = type === 'all' 
+    ? clientProducts 
+    : clientProducts.filter(p => 
+        type === 'insumos' 
+          ? p.type === 'Insumos' 
+          : p.type === 'Producto Terminado'
+      );
+  
+  if (data === stockData) {
+    // Re-calcular distribución de stock para este cliente
+    const categories = [...new Set(filteredProducts.map(p => p.category))];
+    return categories.map(category => {
+      const productsInCategory = filteredProducts.filter(p => p.category === category);
+      const totalQuantity = productsInCategory.reduce((sum, p) => sum + p.quantity, 0);
+      return { name: category, value: totalQuantity };
+    });
+  } else if (data === topProducts) {
+    // Devolver productos top para este cliente
+    return filteredProducts
+      .map(p => {
+        const movements = mockStockMovements.filter(m => m.productId === p.id).length;
+        return { id: p.id, name: p.name, stock: p.quantity, movements };
+      })
+      .sort((a, b) => b.movements - a.movements)
+      .slice(0, 5);
+  } else if (data === lowStockProducts) {
+    // Devolver productos con stock bajo para este cliente
+    return filteredProducts
+      .filter(p => p.quantity < 50) // Un umbral de ejemplo
+      .map(p => ({ 
+        id: p.id, 
+        name: p.name, 
+        stock: p.quantity, 
+        min: Math.round(p.quantity * 1.2) // Un cálculo simple para demostración
+      }))
+      .slice(0, 4);
+  }
+  
+  // Para datos de movimientos, simplemente devolvemos los datos originales como simplificación
+  // En una app real, esto se filtraría por cliente
   return data[type];
 };
 
