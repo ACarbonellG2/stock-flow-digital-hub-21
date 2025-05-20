@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { mockStockMovements, mockProducts } from '@/lib/mockData';
+import { mockStockMovements, mockProducts, mockCompanies } from '@/lib/mockData';
 
 // Mock data for charts - split by product type
 const stockData = {
@@ -124,19 +125,22 @@ const lowStockProducts = {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 // New data for recent movements
-const getRecentMovements = (productType) => {
-  // Filter the mockStockMovements based on product type
+const getRecentMovements = (productType, clientId) => {
+  // Filter the mockStockMovements based on product type and client
   const filteredMovements = mockStockMovements.filter(movement => {
-    if (productType === 'all') return true;
+    if (productType === 'all' && !clientId) return true;
     
     // Find the product for this movement
     const product = mockProducts.find(p => p.id === movement.productId);
     if (!product) return false;
     
-    // Check if the product type matches the filter
-    return productType === 'insumos' 
-      ? product.type === 'Insumos'
-      : product.type === 'Producto Terminado';
+    // Check if the product type and client match the filters
+    const typeMatches = productType === 'all' || 
+      (productType === 'insumos' ? product.type === 'Insumos' : product.type === 'Producto Terminado');
+    
+    const clientMatches = !clientId || product.clientId === clientId;
+    
+    return typeMatches && clientMatches;
   });
   
   // Sort by date (newest first)
@@ -159,25 +163,71 @@ const getRecentMovements = (productType) => {
   });
 };
 
+// Function to filter data by client
+const filterDataByClient = (data, clientId, type) => {
+  if (!clientId) return data[type];
+  
+  // For chart data, we need to recalculate based on products that belong to this client
+  if (type === 'all' || type === 'insumos' || type === 'productos') {
+    const clientProducts = mockProducts.filter(p => p.clientId === clientId);
+    
+    if (data === stockData) {
+      // Re-calculate stock distribution for this client
+      const categories = [...new Set(clientProducts.map(p => p.category))];
+      return categories.map(category => {
+        const productsInCategory = clientProducts.filter(p => p.category === category);
+        const totalQuantity = productsInCategory.reduce((sum, p) => sum + p.quantity, 0);
+        return { name: category, value: totalQuantity };
+      });
+    } else if (data === topProducts) {
+      // Return top products for this client
+      return clientProducts
+        .map(p => {
+          const movements = mockStockMovements.filter(m => m.productId === p.id).length;
+          return { id: p.id, name: p.name, stock: p.quantity, movements };
+        })
+        .sort((a, b) => b.movements - a.movements)
+        .slice(0, 5);
+    } else if (data === lowStockProducts) {
+      // Return low stock products for this client
+      // We're simulating minimum stock levels based on current quantity
+      return clientProducts
+        .filter(p => p.quantity < 50) // Just an example threshold
+        .map(p => ({ 
+          id: p.id, 
+          name: p.name, 
+          stock: p.quantity, 
+          min: Math.round(p.quantity * 1.2) // Just a simple calculation for demonstration
+        }))
+        .slice(0, 4);
+    }
+  }
+  
+  // For movement data, we'll just return the original data as a simplification
+  // In a real app, this would be filtered by client
+  return data[type];
+};
+
 const Reports = () => {
   const [loading, setLoading] = useState(false);
   const [reportType, setReportType] = useState('stock');
   const [productType, setProductType] = useState('all');
+  const [clientId, setClientId] = useState('');
   
   const [currentStockData, setCurrentStockData] = useState(stockData.all);
   const [currentMovementData, setCurrentMovementData] = useState(movementData.all);
   const [currentTopProducts, setCurrentTopProducts] = useState(topProducts.all);
   const [currentLowStockProducts, setCurrentLowStockProducts] = useState(lowStockProducts.all);
-  const [recentMovements, setRecentMovements] = useState(getRecentMovements('all'));
+  const [recentMovements, setRecentMovements] = useState(getRecentMovements('all', ''));
   
   // Update data when product type changes
   useEffect(() => {
-    setCurrentStockData(stockData[productType as keyof typeof stockData]);
-    setCurrentMovementData(movementData[productType as keyof typeof movementData]);
-    setCurrentTopProducts(topProducts[productType as keyof typeof topProducts]);
-    setCurrentLowStockProducts(lowStockProducts[productType as keyof typeof lowStockProducts]);
-    setRecentMovements(getRecentMovements(productType));
-  }, [productType]);
+    setCurrentStockData(filterDataByClient(stockData, clientId, productType));
+    setCurrentMovementData(filterDataByClient(movementData, clientId, productType));
+    setCurrentTopProducts(filterDataByClient(topProducts, clientId, productType));
+    setCurrentLowStockProducts(filterDataByClient(lowStockProducts, clientId, productType));
+    setRecentMovements(getRecentMovements(productType, clientId));
+  }, [productType, clientId]);
   
   const downloadReport = () => {
     setLoading(true);
@@ -252,6 +302,24 @@ const Reports = () => {
               <Label>Rango de Fechas</Label>
               <DateRangePicker />
             </div>
+            
+            {/* Nuevo selector de cliente */}
+            <div className="space-y-2">
+              <Label htmlFor="clientSelect">Cliente</Label>
+              <Select value={clientId} onValueChange={setClientId}>
+                <SelectTrigger id="clientSelect">
+                  <SelectValue placeholder="Todos los Clientes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todos los Clientes</SelectItem>
+                  {mockCompanies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
@@ -288,7 +356,9 @@ const Reports = () => {
             <CardHeader>
               <CardTitle>Distribución de Inventario</CardTitle>
               <CardDescription>
-                Distribución por categoría de {productType === 'insumos' ? 'insumos' : productType === 'productos' ? 'productos terminados' : 'productos'}
+                {clientId 
+                  ? `Distribución por categoría para ${mockCompanies.find(c => c.id === clientId)?.name || 'cliente'}`
+                  : `Distribución por categoría de ${productType === 'insumos' ? 'insumos' : productType === 'productos' ? 'productos terminados' : 'productos'}`}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -323,7 +393,9 @@ const Reports = () => {
               <CardHeader>
                 <CardTitle>Movimientos Mensuales</CardTitle>
                 <CardDescription>
-                  Entradas y salidas de {productType === 'insumos' ? 'insumos' : productType === 'productos' ? 'productos terminados' : 'inventario'} por mes
+                  {clientId 
+                    ? `Entradas y salidas para ${mockCompanies.find(c => c.id === clientId)?.name || 'cliente'}`
+                    : `Entradas y salidas de ${productType === 'insumos' ? 'insumos' : productType === 'productos' ? 'productos terminados' : 'inventario'} por mes`}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -354,7 +426,9 @@ const Reports = () => {
               <div>
                 <CardTitle>Últimos Movimientos</CardTitle>
                 <CardDescription>
-                  Los 5 movimientos más recientes de {productType === 'insumos' ? 'insumos' : productType === 'productos' ? 'productos terminados' : 'inventario'}
+                  {clientId 
+                    ? `Los 5 movimientos más recientes para ${mockCompanies.find(c => c.id === clientId)?.name || 'cliente'}`
+                    : `Los 5 movimientos más recientes de ${productType === 'insumos' ? 'insumos' : productType === 'productos' ? 'productos terminados' : 'inventario'}`}
                 </CardDescription>
               </div>
               <Button variant="outline" size="sm">
@@ -405,7 +479,9 @@ const Reports = () => {
               <div>
                 <CardTitle>Productos Más Movidos</CardTitle>
                 <CardDescription>
-                  {productType === 'insumos' ? 'Insumos' : productType === 'productos' ? 'Productos terminados' : 'Productos'} con mayor actividad en inventario
+                  {clientId 
+                    ? `Productos con mayor actividad para ${mockCompanies.find(c => c.id === clientId)?.name || 'cliente'}`
+                    : `${productType === 'insumos' ? 'Insumos' : productType === 'productos' ? 'Productos terminados' : 'Productos'} con mayor actividad en inventario`}
                 </CardDescription>
               </div>
               <Button variant="outline" size="sm">
@@ -445,7 +521,9 @@ const Reports = () => {
               <div>
                 <CardTitle>Productos con Stock Bajo</CardTitle>
                 <CardDescription>
-                  {productType === 'insumos' ? 'Insumos' : productType === 'productos' ? 'Productos terminados' : 'Productos'} por debajo del nivel mínimo recomendado
+                  {clientId 
+                    ? `Productos bajo mínimo para ${mockCompanies.find(c => c.id === clientId)?.name || 'cliente'}`
+                    : `${productType === 'insumos' ? 'Insumos' : productType === 'productos' ? 'Productos terminados' : 'Productos'} por debajo del nivel mínimo recomendado`}
                 </CardDescription>
               </div>
               <Button variant="outline" size="sm">
