@@ -10,14 +10,11 @@ import {
   Menu, 
   X,
   ShoppingBag,
-  ChevronLeft,
-  ChevronRight,
   Building2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import ClientCompaniesPanel from './ClientCompaniesPanel';
 
 interface LayoutProps {
   children: ReactNode;
@@ -51,32 +48,15 @@ const NavItem = ({ href, icon, title }: NavItemProps) => {
 
 const Layout = ({ children }: LayoutProps) => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [showCompaniesPanel, setShowCompaniesPanel] = useState(true);
   
   const toggleMobileMenu = () => {
     setShowMobileMenu(!showMobileMenu);
   };
-
-  const toggleCompaniesPanel = () => {
-    setShowCompaniesPanel(!showCompaniesPanel);
-  };
   
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Companies Panel - Left Sidebar */}
-      <div className={cn(
-        "fixed top-0 left-0 h-full bg-white border-r z-30 transition-all duration-300 w-64",
-        showCompaniesPanel ? "translate-x-0" : "-translate-x-64",
-        "md:translate-x-0 hidden md:block"
-      )}>
-        <ClientCompaniesPanel />
-      </div>
-      
-      {/* Desktop Sidebar - Main Navigation */}
-      <div className={cn(
-        "hidden md:flex md:flex-col md:fixed md:inset-y-0 transition-all duration-300",
-        showCompaniesPanel ? "md:left-64" : "md:left-0"
-      )}>
+      {/* Desktop Sidebar */}
+      <div className="hidden md:flex md:flex-col md:fixed md:inset-y-0">
         <div className="flex flex-col flex-grow pt-5 bg-white border-r overflow-y-auto">
           <div className="flex items-center justify-between px-4 mb-6">
             <div className="flex items-center">
@@ -86,21 +66,13 @@ const Layout = ({ children }: LayoutProps) => {
                 <p className="text-xs text-gray-500">Dotaciones Corporativas</p>
               </div>
             </div>
-            
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={toggleCompaniesPanel}
-              className="h-8 w-8 p-0 hidden md:flex"
-            >
-              {showCompaniesPanel ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            </Button>
           </div>
           <Separator />
           <div className="flex flex-col space-y-1 px-3 py-4">
             <NavItem href="/" icon={<LayoutDashboard size={18} />} title="Dashboard" />
             <NavItem href="/products" icon={<Package size={18} />} title="Productos" />
             <NavItem href="/add-product" icon={<PlusCircle size={18} />} title="Agregar Producto" />
+            <NavItem href="/clients" icon={<Building2 size={18} />} title="Clientes" />
             <NavItem href="/reports" icon={<BarChart3 size={18} />} title="Reportes" />
             <NavItem href="/settings" icon={<Settings size={18} />} title="Configuración" />
           </div>
@@ -142,33 +114,16 @@ const Layout = ({ children }: LayoutProps) => {
               <NavItem href="/" icon={<LayoutDashboard size={18} />} title="Dashboard" />
               <NavItem href="/products" icon={<Package size={18} />} title="Productos" />
               <NavItem href="/add-product" icon={<PlusCircle size={18} />} title="Agregar Producto" />
+              <NavItem href="/clients" icon={<Building2 size={18} />} title="Clientes" />
               <NavItem href="/reports" icon={<BarChart3 size={18} />} title="Reportes" />
               <NavItem href="/settings" icon={<Settings size={18} />} title="Configuración" />
-            </div>
-            
-            {/* Mobile Companies Panel */}
-            <Separator />
-            <div className="px-3 py-4 flex-1">
-              <div className="px-2 pb-2">
-                <h3 className="text-sm font-semibold text-gray-500 flex items-center">
-                  <Building2 className="h-4 w-4 mr-1" />
-                  Empresas Cliente
-                </h3>
-              </div>
-              <div className="mt-2">
-                <ClientCompaniesPanel />
-              </div>
             </div>
           </div>
         </div>
       )}
       
       {/* Main content */}
-      <div className={cn(
-        "flex flex-col flex-1 w-full transition-all duration-300",
-        "md:pl-64", // Default padding for sidebar
-        showCompaniesPanel ? "md:pl-[32rem]" : "md:pl-64" // Adjust when companies panel is shown
-      )}>
+      <div className="flex flex-col flex-1 w-full md:pl-64">
         <main className="flex-1 mt-16 md:mt-0">
           <div className="py-6 px-4 sm:px-6 md:px-8">
             {children}

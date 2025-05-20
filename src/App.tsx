@@ -11,6 +11,7 @@ import AddProduct from "./pages/AddProduct";
 import ProductDetail from "./pages/ProductDetail";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import Clients from "./pages/Clients";
 import Layout from "./components/Layout";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,11 @@ const App = () => (
           <Route path="/add-product" element={
             <Layout>
               <AddProduct />
+            </Layout>
+          } />
+          <Route path="/clients" element={
+            <Layout>
+              <Clients />
             </Layout>
           } />
           <Route path="/reports" element={

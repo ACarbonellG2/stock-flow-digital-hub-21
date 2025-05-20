@@ -6,7 +6,8 @@ import {
   searchProducts, 
   filterProducts,
   categories,
-  Product
+  Product,
+  types
 } from '@/lib/mockData';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -33,14 +34,24 @@ import {
   Plus, 
   Filter, 
   X, 
-  ArrowUpDown 
+  ArrowUpDown,
+  Building2 
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+
+// Mock client data
+const mockClients = [
+  { id: '1', name: 'Empresa A' },
+  { id: '2', name: 'Empresa B' },
+  { id: '3', name: 'Corporación XYZ' },
+];
 
 const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('');
+  const [productType, setProductType] = useState('');
+  const [client, setClient] = useState('');
   const [sortField, setSortField] = useState<keyof Product>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [loading, setLoading] = useState(true);
@@ -77,8 +88,21 @@ const Products = () => {
   const handleFilter = async () => {
     setLoading(true);
     try {
-      const data = await filterProducts({ category });
-      setProducts(data);
+      const data = await filterProducts({ category, type: productType });
+      
+      // Apply client filter (this would be handled by the backend in a real app)
+      let filteredData = [...data];
+      if (client) {
+        // This is a mock client filter since our backend doesn't support it yet
+        // In a real app, this would be handled by the backend
+        filteredData = filteredData.filter(product => {
+          // Mock client association (random for demo purposes)
+          const randomAssociation = Math.random() > 0.5;
+          return randomAssociation;
+        });
+      }
+      
+      setProducts(filteredData);
     } catch (error) {
       console.error('Error filtering products:', error);
     } finally {
@@ -88,6 +112,8 @@ const Products = () => {
 
   const resetFilters = async () => {
     setCategory('');
+    setProductType('');
+    setClient('');
     setSearchQuery('');
     await loadProducts();
   };
@@ -155,7 +181,7 @@ const Products = () => {
           </div>
 
           {showFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
                   Categoría
@@ -174,7 +200,43 @@ const Products = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-end gap-2">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Tipo de Producto
+                </label>
+                <Select value={productType} onValueChange={setProductType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos los tipos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Todos los tipos</SelectItem>
+                    {types.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Cliente
+                </label>
+                <Select value={client} onValueChange={setClient}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos los clientes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Todos los clientes</SelectItem>
+                    {mockClients.map((cl) => (
+                      <SelectItem key={cl.id} value={cl.id}>
+                        {cl.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-end gap-2 md:col-span-3">
                 <Button onClick={handleFilter} className="bg-inventory-600 hover:bg-inventory-700">
                   Aplicar Filtros
                 </Button>
@@ -220,6 +282,12 @@ const Products = () => {
                         </TableHead>
                         <TableHead>Categoría</TableHead>
                         <TableHead>Tipo</TableHead>
+                        <TableHead>
+                          <div className="flex items-center">
+                            <Building2 className="mr-1 h-4 w-4" />
+                            Cliente
+                          </div>
+                        </TableHead>
                         <TableHead 
                           className="text-right cursor-pointer"
                           onClick={() => sortProducts('quantity')}
@@ -242,7 +310,6 @@ const Products = () => {
                             )}
                           </div>
                         </TableHead>
-                        <TableHead>Descripción</TableHead>
                         <TableHead className="text-right">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -256,6 +323,17 @@ const Products = () => {
                             <Badge variant={product.type === 'Insumos' ? 'secondary' : 'outline'}>
                               {product.type}
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {/* Mock client assignment (would be from real data in a real app) */}
+                            {Math.random() > 0.5 ? (
+                              <div className="flex items-center">
+                                <Building2 className="h-3 w-3 mr-1 text-inventory-600" />
+                                <span className="text-sm">{mockClients[Math.floor(Math.random() * mockClients.length)].name}</span>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-gray-500">Sin asignar</span>
+                            )}
                           </TableCell>
                           <TableCell className="text-right">
                             <span 
@@ -272,9 +350,6 @@ const Products = () => {
                           </TableCell>
                           <TableCell className="text-right">
                             ${product.price.toLocaleString()}
-                          </TableCell>
-                          <TableCell className="truncate max-w-[200px]">
-                            {product.description ? product.description.substring(0, 40) + (product.description.length > 40 ? '...' : '') : ''}
                           </TableCell>
                           <TableCell className="text-right">
                             <Link to={`/products/${product.id}`}>
