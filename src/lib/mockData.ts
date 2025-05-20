@@ -1,4 +1,3 @@
-
 export interface Product {
   id: string;
   name: string;
@@ -9,6 +8,7 @@ export interface Product {
   description: string;
   sku: string;
   lastUpdated: string;
+  clientId?: string; // Added client association
 }
 
 export interface StockMovement {
@@ -37,7 +37,8 @@ export const mockProducts: Product[] = [
     price: 45000,
     description: "Camisa corporativa de manga larga con logo bordado",
     sku: "CAM-ML-001",
-    lastUpdated: "2025-05-08T14:30:00Z"
+    lastUpdated: "2025-05-08T14:30:00Z",
+    clientId: "1"
   },
   {
     id: "2",
@@ -48,7 +49,8 @@ export const mockProducts: Product[] = [
     price: 38000,
     description: "Camisa corporativa de manga corta con logo estampado",
     sku: "CAM-MC-002",
-    lastUpdated: "2025-05-07T10:15:00Z"
+    lastUpdated: "2025-05-07T10:15:00Z",
+    clientId: "2"
   },
   {
     id: "3",
@@ -274,7 +276,44 @@ export const categories = [
   "Lonas"
 ];
 
-// Simulated API functions
+// Mock client companies data
+export interface Company {
+  id: string;
+  name: string;
+  contact: string;
+  email: string;
+}
+
+export const mockCompanies: Company[] = [
+  { id: '1', name: 'Empresa A', contact: 'Juan Pérez', email: 'juan@empresaa.com' },
+  { id: '2', name: 'Empresa B', contact: 'María López', email: 'maria@empresab.com' },
+  { id: '3', name: 'Constructora XYZ', contact: 'Pedro Rodríguez', email: 'pedro@constructoraxyz.com' },
+  { id: '4', name: 'Hotel Empresarial', contact: 'Ana Gómez', email: 'ana@hotelempresarial.com' },
+  { id: '5', name: 'Textiles del Norte', contact: 'Carlos Martínez', email: 'carlos@textilesnorte.com' },
+];
+
+// Simulated API functions for companies
+let companies = [...mockCompanies];
+
+export const getCompanies = () => {
+  return Promise.resolve([...companies]);
+};
+
+export const getCompanyById = (id: string) => {
+  const company = companies.find(c => c.id === id);
+  return Promise.resolve(company || null);
+};
+
+export const addCompany = (company: Omit<Company, 'id'>) => {
+  const newCompany = {
+    ...company,
+    id: (companies.length + 1).toString(),
+  };
+  companies = [...companies, newCompany];
+  return Promise.resolve(newCompany);
+};
+
+// Simulated API functions for products
 let products = [...mockProducts];
 let stockMovements = [...mockStockMovements];
 

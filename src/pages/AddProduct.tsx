@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { addProduct, categories } from '@/lib/mockData';
+import { addProduct, categories, getCompanies, Company } from '@/lib/mockData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -28,11 +29,32 @@ const AddProduct = () => {
     price: '',
     description: '',
     sku: '',
+    clientId: '',
   });
   
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [filteredCategories, setFilteredCategories] = useState<string[]>(categories);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(false);
+  
+  // Load companies on component mount
+  useEffect(() => {
+    const loadCompanies = async () => {
+      setLoadingCompanies(true);
+      try {
+        const fetchedCompanies = await getCompanies();
+        setCompanies(fetchedCompanies);
+      } catch (error) {
+        console.error('Error loading companies:', error);
+        toast.error('Error al cargar las empresas cliente');
+      } finally {
+        setLoadingCompanies(false);
+      }
+    };
+    
+    loadCompanies();
+  }, []);
   
   // Filter categories based on type selection
   useEffect(() => {
@@ -234,6 +256,39 @@ const AddProduct = () => {
                 {errors.category && (
                   <p className="text-red-500 text-xs">{errors.category}</p>
                 )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="clientId">
+                  Empresa Cliente
+                </Label>
+                <Select
+                  value={formData.clientId}
+                  onValueChange={(value) => handleSelectChange('clientId', value)}
+                >
+                  <SelectTrigger id="clientId">
+                    <SelectValue placeholder="Selecciona un cliente (opcional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {loadingCompanies ? (
+                      <SelectItem value="loading" disabled>
+                        Cargando clientes...
+                      </SelectItem>
+                    ) : (
+                      <>
+                        <SelectItem value="">Sin asociar a cliente</SelectItem>
+                        {companies.map((company) => (
+                          <SelectItem key={company.id} value={company.id}>
+                            {company.name}
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">
+                  Asocia este producto a una empresa cliente (opcional)
+                </p>
               </div>
               
               <div className="space-y-2 md:col-span-2">
