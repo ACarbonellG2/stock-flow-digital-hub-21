@@ -9,6 +9,8 @@ export interface Product {
   sku: string;
   lastUpdated: string;
   clientId?: string; // Added client association
+  supplierId?: string;
+  imageUrl?: string; // URL de la imagen del producto
 }
 
 export interface StockMovement {
@@ -20,6 +22,8 @@ export interface StockMovement {
   quantity: number;
   date: string;
   supplierOrClient: string;
+  supplierId?: string; // Nuevo campo para el ID del proveedor
+  clientId?: string;   // Nuevo campo para el ID del cliente
   notes: string;
 }
 
@@ -38,7 +42,8 @@ export const mockProducts: Product[] = [
     description: "Camisa corporativa de manga larga con logo bordado",
     sku: "CAM-ML-001",
     lastUpdated: "2025-05-08T14:30:00Z",
-    clientId: "1"
+    clientId: "1",
+    imageUrl: "https://images.unsplash.com/photo-1603252109303-2751441dd157?w=500&auto=format&fit=crop&q=60"
   },
   {
     id: "2",
@@ -50,7 +55,8 @@ export const mockProducts: Product[] = [
     description: "Camisa corporativa de manga corta con logo estampado",
     sku: "CAM-MC-002",
     lastUpdated: "2025-05-07T10:15:00Z",
-    clientId: "2"
+    clientId: "2",
+    imageUrl: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=500&auto=format&fit=crop&q=60"
   },
   {
     id: "3",
@@ -61,7 +67,8 @@ export const mockProducts: Product[] = [
     price: 22000,
     description: "Gorra con logo empresarial bordado en alta calidad",
     sku: "GOR-BOR-003",
-    lastUpdated: "2025-05-08T09:45:00Z"
+    lastUpdated: "2025-05-08T09:45:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=500&auto=format&fit=crop&q=60"
   },
   {
     id: "4",
@@ -72,7 +79,8 @@ export const mockProducts: Product[] = [
     price: 85000,
     description: "Overol industrial resistente de material denim",
     sku: "OVE-DEN-004",
-    lastUpdated: "2025-05-06T16:20:00Z"
+    lastUpdated: "2025-05-06T16:20:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&auto=format&fit=crop&q=60"
   },
   {
     id: "5",
@@ -83,7 +91,8 @@ export const mockProducts: Product[] = [
     price: 28000,
     description: "Delantal de cocina profesional resistente a manchas",
     sku: "DEL-COC-005",
-    lastUpdated: "2025-05-08T11:10:00Z"
+    lastUpdated: "2025-05-08T11:10:00Z",
+    imageUrl: "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.marketrcn.com%2FMCO-2777926890-delantal-de-cocina-para-nino-rojo-masterchef-_JM&psig=AOvVaw3xbvFnouk9fwbjnBipPeDJ&ust=1747848161151000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCOiFzvjHso0DFQAAAAAdAAAAABAd"
   },
   {
     id: "6",
@@ -94,7 +103,8 @@ export const mockProducts: Product[] = [
     price: 32000,
     description: "Chaleco reflectivo con tiras de alta visibilidad",
     sku: "CHA-REF-006",
-    lastUpdated: "2025-05-07T14:50:00Z"
+    lastUpdated: "2025-05-07T14:50:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?w=500&auto=format&fit=crop&q=60"
   },
   {
     id: "7",
@@ -105,7 +115,8 @@ export const mockProducts: Product[] = [
     price: 55000,
     description: "Mochila corporativa con compartimiento para laptop",
     sku: "MAL-COR-007",
-    lastUpdated: "2025-05-05T10:30:00Z"
+    lastUpdated: "2025-05-05T10:30:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&auto=format&fit=crop&q=60"
   },
   {
     id: "8",
@@ -116,7 +127,8 @@ export const mockProducts: Product[] = [
     price: 120000,
     description: "Conjunto completo de uniforme administrativo",
     sku: "UNI-ADM-008",
-    lastUpdated: "2025-05-04T09:15:00Z"
+    lastUpdated: "2025-05-04T09:15:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=500&auto=format&fit=crop&q=60"
   },
   {
     id: "9",
@@ -127,7 +139,8 @@ export const mockProducts: Product[] = [
     price: 35000,
     description: "Camiseta polo con logo empresarial bordado",
     sku: "POL-BOR-009",
-    lastUpdated: "2025-05-07T15:40:00Z"
+    lastUpdated: "2025-05-07T15:40:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=500&auto=format&fit=crop&q=60"
   },
   {
     id: "10",
@@ -138,7 +151,8 @@ export const mockProducts: Product[] = [
     price: 98000,
     description: "Chaqueta corporativa impermeable para uso exterior",
     sku: "CHA-IMP-010",
-    lastUpdated: "2025-05-03T13:20:00Z"
+    lastUpdated: "2025-05-03T13:20:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&auto=format&fit=crop&q=60"
   },
   {
     id: "11",
@@ -149,7 +163,8 @@ export const mockProducts: Product[] = [
     price: 15000,
     description: "Tela de algodón de alta calidad para camisas",
     sku: "TEL-ALG-011",
-    lastUpdated: "2025-05-02T11:20:00Z"
+    lastUpdated: "2025-05-02T11:20:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?w=500&auto=format&fit=crop&q=60"
   },
   {
     id: "12",
@@ -160,7 +175,8 @@ export const mockProducts: Product[] = [
     price: 200,
     description: "Botones plásticos negros de 1cm de diámetro",
     sku: "BOT-PLA-012",
-    lastUpdated: "2025-05-01T09:45:00Z"
+    lastUpdated: "2025-05-01T09:45:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?w=500&auto=format&fit=crop&q=60"
   },
   {
     id: "13",
@@ -171,7 +187,8 @@ export const mockProducts: Product[] = [
     price: 1500,
     description: "Cremalleras metálicas de 20cm para chaquetas",
     sku: "CRE-MET-013",
-    lastUpdated: "2025-04-30T14:30:00Z"
+    lastUpdated: "2025-04-30T14:30:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?w=500&auto=format&fit=crop&q=60"
   },
   {
     id: "14",
@@ -182,7 +199,8 @@ export const mockProducts: Product[] = [
     price: 18000,
     description: "Láminas de caucho de 2mm para suelas",
     sku: "CAU-LAM-014",
-    lastUpdated: "2025-04-29T10:15:00Z"
+    lastUpdated: "2025-04-29T10:15:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?w=500&auto=format&fit=crop&q=60"
   },
   {
     id: "15",
@@ -193,7 +211,8 @@ export const mockProducts: Product[] = [
     price: 22000,
     description: "Lona impermeable azul para maletas y mochilas",
     sku: "LON-IMP-015",
-    lastUpdated: "2025-04-28T16:20:00Z"
+    lastUpdated: "2025-04-28T16:20:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?w=500&auto=format&fit=crop&q=60"
   }
 ];
 
@@ -208,6 +227,8 @@ export const mockStockMovements: StockMovement[] = [
     quantity: 30,
     date: "2025-05-08T14:30:00Z",
     supplierOrClient: "Textiles del Norte",
+    supplierId: "1",
+    clientId: "1",
     notes: "Entrega programada mensual"
   },
   {
@@ -219,6 +240,8 @@ export const mockStockMovements: StockMovement[] = [
     quantity: 15,
     date: "2025-05-07T15:45:00Z",
     supplierOrClient: "Hotel Empresarial",
+    supplierId: "4",
+    clientId: "2",
     notes: "Pedido Hotel Empresarial #HE-452"
   },
   {
@@ -230,6 +253,8 @@ export const mockStockMovements: StockMovement[] = [
     quantity: 50,
     date: "2025-05-06T09:20:00Z",
     supplierOrClient: "Manufacturas Express",
+    supplierId: "2",
+    clientId: "3",
     notes: "Nuevo lote de producción"
   },
   {
@@ -241,6 +266,8 @@ export const mockStockMovements: StockMovement[] = [
     quantity: 10,
     date: "2025-05-05T16:10:00Z",
     supplierOrClient: "Constructora ABC",
+    supplierId: "3",
+    clientId: "1",
     notes: "Pedido Constructora ABC #CA-789"
   },
   {
@@ -252,6 +279,8 @@ export const mockStockMovements: StockMovement[] = [
     quantity: 25,
     date: "2025-05-04T11:05:00Z",
     supplierOrClient: "Importadora Textil",
+    supplierId: "3",
+    clientId: "5",
     notes: "Reposición de inventario"
   }
 ];
@@ -326,14 +355,23 @@ export const getProductById = (id: string) => {
   return Promise.resolve(product || null);
 };
 
-export const addProduct = (product: Omit<Product, 'id' | 'lastUpdated'>) => {
-  const newProduct = {
+export const addProduct = async (product: Omit<Product, 'id' | 'lastUpdated' | 'imageUrl'> & { image?: File }) => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  // En un entorno real, aquí subiríamos la imagen a un servicio de almacenamiento
+  // y obtendríamos la URL. Por ahora, simularemos una URL.
+  const imageUrl = product.image ? `https://example.com/images/${Date.now()}.jpg` : undefined;
+  
+  const newProduct: Product = {
+    id: String(mockProducts.length + 1),
     ...product,
-    id: (products.length + 1).toString(),
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
+    imageUrl
   };
-  products = [...products, newProduct];
-  return Promise.resolve(newProduct);
+  
+  mockProducts.push(newProduct);
+  return newProduct;
 };
 
 export const updateProduct = (id: string, updates: Partial<Omit<Product, 'id' | 'lastUpdated'>>) => {
@@ -413,20 +451,154 @@ export const searchProducts = (query: string) => {
 
 export const filterProducts = ({ 
   category, 
+  productType,
+  client,
   minStock = 0,
   maxStock = Number.MAX_SAFE_INTEGER
 }: {
   category?: string;
+  productType?: string;
+  client?: string;
   minStock?: number;
   maxStock?: number;
 }) => {
+  // Asegurarnos de que tenemos una copia de los productos
   let filtered = [...products];
   
-  if (category) {
+  // Aplicar filtros solo si tienen valor
+  if (category && category !== '') {
     filtered = filtered.filter(p => p.category === category);
   }
   
+  if (productType && productType !== '') {
+    filtered = filtered.filter(p => p.type === productType);
+  }
+  
+  if (client && client !== '') {
+    filtered = filtered.filter(p => p.clientId === client);
+  }
+  
+  // Filtrar por stock
   filtered = filtered.filter(p => p.quantity >= minStock && p.quantity <= maxStock);
   
+  // Si no hay filtros activos, devolver todos los productos
+  if (!category && !productType && !client) {
+    return Promise.resolve(products);
+  }
+  
   return Promise.resolve(filtered);
+};
+
+// Interfaz para proveedores
+export interface Supplier {
+  id: string;
+  name: string;
+  contact: string;
+  email: string;
+  phone?: string;
+}
+
+// Datos mock de proveedores
+export const mockSuppliers: Supplier[] = [
+  { 
+    id: '1', 
+    name: 'Textiles del Norte', 
+    contact: 'Carlos Martínez', 
+    email: 'carlos@textilesnorte.com',
+    phone: '555-0101'
+  },
+  { 
+    id: '2', 
+    name: 'Manufacturas Express', 
+    contact: 'Laura Sánchez', 
+    email: 'laura@manufacturasexpress.com',
+    phone: '555-0102'
+  },
+  { 
+    id: '3', 
+    name: 'Importadora Textil', 
+    contact: 'Roberto Díaz', 
+    email: 'roberto@importadoratextil.com',
+    phone: '555-0103'
+  }
+];
+
+// Simulated API functions for suppliers
+let suppliers = [...mockSuppliers];
+
+export const getSuppliers = () => {
+  return Promise.resolve([...suppliers]);
+};
+
+export const getSupplierById = (id: string) => {
+  const supplier = suppliers.find(s => s.id === id);
+  return Promise.resolve(supplier || null);
+};
+
+export const addSupplier = (supplier: Omit<Supplier, 'id'>) => {
+  const newSupplier = {
+    ...supplier,
+    id: (suppliers.length + 1).toString(),
+  };
+  suppliers = [...suppliers, newSupplier];
+  return Promise.resolve(newSupplier);
+};
+
+export interface Client {
+  id: string;
+  name: string;
+  contact: string;
+  email: string;
+  phone: string;
+}
+
+// Mock data for clients
+const mockClients: Client[] = [
+  {
+    id: '1',
+    name: 'Empresa ABC',
+    contact: 'Juan Pérez',
+    email: 'juan@empresaabc.com',
+    phone: '555-0101'
+  },
+  {
+    id: '2',
+    name: 'Corporación XYZ',
+    contact: 'María García',
+    email: 'maria@corporacionxyz.com',
+    phone: '555-0102'
+  },
+  {
+    id: '3',
+    name: 'Industrias 123',
+    contact: 'Carlos López',
+    email: 'carlos@industrias123.com',
+    phone: '555-0103'
+  }
+];
+
+// Simulated API functions for clients
+export const getClients = async (): Promise<Client[]> => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return mockClients;
+};
+
+export const getClientById = async (id: string): Promise<Client | undefined> => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return mockClients.find(client => client.id === id);
+};
+
+export const addClient = async (client: Omit<Client, 'id'>): Promise<Client> => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const newClient: Client = {
+    id: String(mockClients.length + 1),
+    ...client
+  };
+  
+  mockClients.push(newClient);
+  return newClient;
 };

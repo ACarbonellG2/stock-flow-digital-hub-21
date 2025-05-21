@@ -1,4 +1,3 @@
-
 import React, { ReactNode, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -10,7 +9,8 @@ import {
   Menu, 
   X,
   ShoppingBag,
-  Building2
+  Building2,
+  Truck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -73,6 +73,7 @@ const Layout = ({ children }: LayoutProps) => {
             <NavItem href="/products" icon={<Package size={18} />} title="Productos" />
             <NavItem href="/add-product" icon={<PlusCircle size={18} />} title="Agregar Producto" />
             <NavItem href="/clients" icon={<Building2 size={18} />} title="Clientes" />
+            <NavItem href="/suppliers" icon={<Truck size={18} />} title="Proveedores" />
             <NavItem href="/reports" icon={<BarChart3 size={18} />} title="Reportes" />
             <NavItem href="/settings" icon={<Settings size={18} />} title="Configuración" />
           </div>
@@ -115,6 +116,7 @@ const Layout = ({ children }: LayoutProps) => {
               <NavItem href="/products" icon={<Package size={18} />} title="Productos" />
               <NavItem href="/add-product" icon={<PlusCircle size={18} />} title="Agregar Producto" />
               <NavItem href="/clients" icon={<Building2 size={18} />} title="Clientes" />
+              <NavItem href="/suppliers" icon={<Truck size={18} />} title="Proveedores" />
               <NavItem href="/reports" icon={<BarChart3 size={18} />} title="Reportes" />
               <NavItem href="/settings" icon={<Settings size={18} />} title="Configuración" />
             </div>

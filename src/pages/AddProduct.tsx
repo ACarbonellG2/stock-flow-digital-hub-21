@@ -1,7 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { addProduct, categories, getCompanies, Company } from '@/lib/mockData';
+import { 
+  addProduct, 
+  categories, 
+  getCompanies, 
+  getSuppliers,
+  Company,
+  Supplier 
+} from '@/lib/mockData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -14,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, Upload, Image as ImageIcon, X } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
@@ -30,30 +36,41 @@ const AddProduct = () => {
     description: '',
     sku: '',
     clientId: '',
+    supplierId: '',
+    image: null as File | null,
   });
   
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [filteredCategories, setFilteredCategories] = useState<string[]>(categories);
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loadingCompanies, setLoadingCompanies] = useState(false);
+  const [loadingSuppliers, setLoadingSuppliers] = useState(false);
   
-  // Load companies on component mount
+  // Load companies and suppliers on component mount
   useEffect(() => {
-    const loadCompanies = async () => {
+    const loadData = async () => {
       setLoadingCompanies(true);
+      setLoadingSuppliers(true);
       try {
-        const fetchedCompanies = await getCompanies();
+        const [fetchedCompanies, fetchedSuppliers] = await Promise.all([
+          getCompanies(),
+          getSuppliers()
+        ]);
         setCompanies(fetchedCompanies);
+        setSuppliers(fetchedSuppliers);
       } catch (error) {
-        console.error('Error loading companies:', error);
-        toast.error('Error al cargar las empresas cliente');
+        console.error('Error loading data:', error);
+        toast.error('Error al cargar los datos');
       } finally {
         setLoadingCompanies(false);
+        setLoadingSuppliers(false);
       }
     };
     
-    loadCompanies();
+    loadData();
   }, []);
   
   // Filter categories based on type selection
@@ -103,6 +120,37 @@ const AddProduct = () => {
     if (errors.type) {
       setErrors({ ...errors, type: '' });
     }
+  };
+  
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validar el tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        toast.error('Por favor, selecciona un archivo de imagen válido');
+        return;
+      }
+      
+      // Validar el tamaño (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('La imagen no debe superar los 5MB');
+        return;
+      }
+      
+      setFormData(prev => ({ ...prev, image: file }));
+      
+      // Crear URL para la vista previa
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setFormData(prev => ({ ...prev, image: null }));
+    setPreviewUrl(null);
   };
   
   const validateForm = () => {
@@ -290,6 +338,39 @@ const AddProduct = () => {
                   Asocia este producto a una empresa cliente (opcional)
                 </p>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="supplierId">
+                  Proveedor
+                </Label>
+                <Select
+                  value={formData.supplierId}
+                  onValueChange={(value) => handleSelectChange('supplierId', value)}
+                >
+                  <SelectTrigger id="supplierId">
+                    <SelectValue placeholder="Selecciona un proveedor (opcional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {loadingSuppliers ? (
+                      <SelectItem value="loading" disabled>
+                        Cargando proveedores...
+                      </SelectItem>
+                    ) : (
+                      <>
+                        <SelectItem value="no-supplier">Sin asociar a proveedor</SelectItem>
+                        {suppliers.map((supplier) => (
+                          <SelectItem key={supplier.id} value={supplier.id}>
+                            {supplier.name}
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">
+                  Asocia este producto a un proveedor (opcional)
+                </p>
+              </div>
               
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="description">
@@ -342,6 +423,54 @@ const AddProduct = () => {
                 {errors.price && (
                   <p className="text-red-500 text-xs">{errors.price}</p>
                 )}
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="image">
+                  Imagen del Producto
+                </Label>
+                <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
+                  <div className="text-center">
+                    {previewUrl ? (
+                      <div className="relative">
+                        <img
+                          src={previewUrl}
+                          alt="Vista previa"
+                          className="mx-auto h-32 w-32 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={removeImage}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <ImageIcon className="mx-auto h-12 w-12 text-gray-300" aria-hidden="true" />
+                        <div className="mt-4 flex text-sm leading-6 text-gray-600">
+                          <label
+                            htmlFor="image"
+                            className="relative cursor-pointer rounded-md bg-white font-semibold text-inventory-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-inventory-600 focus-within:ring-offset-2 hover:text-inventory-500"
+                          >
+                            <span>Subir una imagen</span>
+                            <input
+                              id="image"
+                              name="image"
+                              type="file"
+                              accept="image/*"
+                              className="sr-only"
+                              onChange={handleImageChange}
+                            />
+                          </label>
+                          <p className="pl-1">o arrastrar y soltar</p>
+                        </div>
+                        <p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF hasta 5MB</p>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
             

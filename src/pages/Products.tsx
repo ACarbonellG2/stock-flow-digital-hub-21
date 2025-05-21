@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   getProducts, 
@@ -48,6 +47,7 @@ const mockClients = [
 
 const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('');
   const [productType, setProductType] = useState('');
@@ -56,72 +56,88 @@ const Products = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = await getProducts();
       setProducts(data);
+      setFilteredProducts(data);
     } catch (error) {
       console.error('Error loading products:', error);
+      setError('Error al cargar los productos. Por favor, intenta de nuevo.');
+      setProducts([]);
+      setFilteredProducts([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      setFilteredProducts(products);
+      return;
+    }
+
     setLoading(true);
+    setError(null);
     try {
       const data = await searchProducts(searchQuery);
-      setProducts(data);
+      setFilteredProducts(data);
     } catch (error) {
       console.error('Error searching products:', error);
+      setError('Error al buscar productos. Por favor, intenta de nuevo.');
+      setFilteredProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleFilter = async () => {
+    console.log('Aplicando filtros:', { category, productType, client });
     setLoading(true);
+    setError(null);
+    
+    // Si no hay filtros seleccionados, mostrar todos los productos
+    if (!category && !productType && !client) {
+      console.log('No hay filtros seleccionados, mostrando todos los productos');
+      setFilteredProducts(products);
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Only pass category to filterProducts as it doesn't accept productType directly
-      const data = await filterProducts({ category });
-      
-      // Apply type filter client-side
-      let filteredData = [...data];
-      if (productType) {
-        filteredData = filteredData.filter(product => product.type === productType);
-      }
-      
-      // Apply client filter (this would be handled by the backend in a real app)
-      if (client) {
-        // This is a mock client filter since our backend doesn't support it yet
-        // In a real app, this would be handled by the backend
-        filteredData = filteredData.filter(product => {
-          // Mock client association (random for demo purposes)
-          const randomAssociation = Math.random() > 0.5;
-          return randomAssociation;
-        });
-      }
-      
-      setProducts(filteredData);
+      console.log('Llamando a filterProducts...');
+      const data = await filterProducts({ 
+        category,
+        productType,
+        client
+      });
+      console.log('Datos filtrados recibidos:', data);
+      setFilteredProducts(data);
     } catch (error) {
-      console.error('Error filtering products:', error);
+      console.error('Error al filtrar productos:', error);
+      setError('Error al aplicar los filtros. Por favor, intenta de nuevo.');
+      setFilteredProducts(products); // En caso de error, mostrar todos los productos
     } finally {
       setLoading(false);
     }
   };
 
-  const resetFilters = async () => {
+  const resetFilters = () => {
+    console.log('Reseteando filtros...');
     setCategory('');
     setProductType('');
     setClient('');
     setSearchQuery('');
-    await loadProducts();
+    setError(null);
+    setFilteredProducts(products);
   };
 
   const sortProducts = (field: keyof Product) => {
@@ -129,14 +145,13 @@ const Products = () => {
     setSortField(field);
     setSortDirection(newDirection);
 
-    // Sort products
-    const sorted = [...products].sort((a, b) => {
+    const sorted = [...filteredProducts].sort((a, b) => {
       if (a[field] < b[field]) return newDirection === 'asc' ? -1 : 1;
       if (a[field] > b[field]) return newDirection === 'asc' ? 1 : -1;
       return 0;
     });
 
-    setProducts(sorted);
+    setFilteredProducts(sorted);
   };
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
@@ -144,6 +159,13 @@ const Products = () => {
       handleSearch();
     }
   };
+
+  // Agregar efecto para aplicar filtros cuando cambian los valores
+  useEffect(() => {
+    if (showFilters) {
+      handleFilter();
+    }
+  }, [category, productType, client]);
 
   return (
     <div className="space-y-6">
@@ -161,6 +183,20 @@ const Products = () => {
 
       <Card>
         <CardContent className="p-6">
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-red-600">{error}</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2"
+                onClick={resetFilters}
+              >
+                Intentar de nuevo
+              </Button>
+            </div>
+          )}
+
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex w-full">
               <Input
@@ -259,7 +295,7 @@ const Products = () => {
             </div>
           ) : (
             <>
-              {products.length > 0 ? (
+              {filteredProducts.length > 0 ? (
                 <div className="rounded-md border overflow-hidden">
                   <Table>
                     <TableHeader>
@@ -320,7 +356,7 @@ const Products = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {products.map((product) => (
+                      {filteredProducts.map((product) => (
                         <TableRow key={product.id}>
                           <TableCell className="font-medium">{product.sku}</TableCell>
                           <TableCell>{product.name}</TableCell>
@@ -331,11 +367,12 @@ const Products = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {/* Mock client assignment (would be from real data in a real app) */}
-                            {Math.random() > 0.5 ? (
+                            {product.clientId ? (
                               <div className="flex items-center">
                                 <Building2 className="h-3 w-3 mr-1 text-inventory-600" />
-                                <span className="text-sm">{mockClients[Math.floor(Math.random() * mockClients.length)].name}</span>
+                                <span className="text-sm">
+                                  {mockClients.find(cl => cl.id === product.clientId)?.name || 'Cliente Desconocido'}
+                                </span>
                               </div>
                             ) : (
                               <span className="text-sm text-gray-500">Sin asignar</span>

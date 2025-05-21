@@ -1,11 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   getProductById,
   getStockMovements,
   deleteProduct,
-  addStockMovement
+  addStockMovement,
+  getSuppliers,
+  getClients,
+  Supplier,
+  Client,
+  Product,
+  StockMovement
 } from '@/lib/mockData';
 import { 
   Card, 
@@ -71,47 +76,61 @@ const ProductDetail = () => {
   const [stockMovementForm, setStockMovementForm] = useState({
     type: 'entrada',
     quantity: 0,
-    supplierOrClient: '',
+    supplierId: '',
+    clientId: '',
     notes: ''
   });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   
-  const [product, setProduct] = useState<any>(null);
-  const [stockMovements, setStockMovements] = useState<any[]>([]);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    const loadProductData = async () => {
+    const loadData = async () => {
       setIsLoading(true);
       if (id) {
         try {
-          const productData = await getProductById(id);
-          const movementsData = await getStockMovements(id);
+          const [productData, movementsData, suppliersData, clientsData] = await Promise.all([
+            getProductById(id),
+            getStockMovements(id),
+            getSuppliers(),
+            getClients()
+          ]);
           
           if (productData) {
             setProduct(productData);
           }
           
           setStockMovements(movementsData);
+          setSuppliers(suppliersData);
+          setClients(clientsData);
         } catch (error) {
-          console.error('Error loading product data:', error);
-          toast.error('Error al cargar los datos del producto');
+          console.error('Error loading data:', error);
+          toast.error('Error al cargar los datos');
         } finally {
           setIsLoading(false);
         }
       }
     };
     
-    loadProductData();
+    loadData();
   }, [id]);
   
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setStockMovementForm({ ...stockMovementForm, [name]: value });
   };
   
   const handleTypeChange = (type: string) => {
-    setStockMovementForm({ ...stockMovementForm, type });
+    setStockMovementForm({ 
+      ...stockMovementForm, 
+      type,
+      supplierId: type === 'entrada' ? stockMovementForm.supplierId : '',
+      clientId: type === 'salida' ? stockMovementForm.clientId : ''
+    });
   };
   
   const handleStockMovement = async () => {
@@ -119,13 +138,19 @@ const ProductDetail = () => {
     try {
       if (id) {
         const moveType = stockMovementForm.type === 'entrada' ? 'in' : 'out';
+        const supplierOrClient = stockMovementForm.type === 'entrada'
+          ? suppliers.find(s => s.id === stockMovementForm.supplierId)?.name || ''
+          : clients.find(c => c.id === stockMovementForm.clientId)?.name || '';
+
         const result = await addStockMovement({
           productId: id,
           productSku: product.sku,
           type: moveType,
           quantity: Number(stockMovementForm.quantity),
-          supplierOrClient: stockMovementForm.supplierOrClient,
+          supplierOrClient,
           notes: stockMovementForm.notes,
+          supplierId: stockMovementForm.type === 'entrada' ? stockMovementForm.supplierId : undefined,
+          clientId: stockMovementForm.type === 'salida' ? stockMovementForm.clientId : undefined
         });
         
         toast.success(
@@ -135,8 +160,10 @@ const ProductDetail = () => {
         );
         
         // Reload product and stock movements
-        const updatedProduct = await getProductById(id);
-        const updatedMovements = await getStockMovements(id);
+        const [updatedProduct, updatedMovements] = await Promise.all([
+          getProductById(id),
+          getStockMovements(id)
+        ]);
         setProduct(updatedProduct);
         setStockMovements(updatedMovements);
       }
@@ -150,7 +177,8 @@ const ProductDetail = () => {
       setStockMovementForm({
         type: 'entrada',
         quantity: 0,
-        supplierOrClient: '',
+        supplierId: '',
+        clientId: '',
         notes: ''
       });
     }
@@ -247,8 +275,16 @@ const ProductDetail = () => {
         <Card className="md:col-span-1">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center">
-              <div className="relative w-full h-64 mb-4 bg-gray-100 rounded-md flex justify-center items-center">
-                <Package className="h-24 w-24 text-gray-400" />
+              <div className="relative w-full h-64 mb-4 bg-gray-100 rounded-md flex justify-center items-center overflow-hidden">
+                {product.imageUrl ? (
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Package className="h-24 w-24 text-gray-400" />
+                )}
               </div>
               <div className="w-full mt-2 flex justify-center">
                 {stockStatus()}
@@ -328,19 +364,31 @@ const ProductDetail = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="supplierOrClient">
+                    <Label htmlFor={stockMovementForm.type === 'entrada' ? 'supplierId' : 'clientId'}>
                       {stockMovementForm.type === 'entrada' ? 'Proveedor' : 'Cliente'} <span className="text-red-500">*</span>
                     </Label>
-                    <Input
-                      id="supplierOrClient"
-                      name="supplierOrClient"
-                      placeholder={stockMovementForm.type === 'entrada' 
-                        ? "Nombre del proveedor" 
-                        : "Nombre del cliente"}
-                      value={stockMovementForm.supplierOrClient}
+                    <select
+                      id={stockMovementForm.type === 'entrada' ? 'supplierId' : 'clientId'}
+                      name={stockMovementForm.type === 'entrada' ? 'supplierId' : 'clientId'}
+                      value={stockMovementForm.type === 'entrada' ? stockMovementForm.supplierId : stockMovementForm.clientId}
                       onChange={handleInputChange}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       required
-                    />
+                    >
+                      <option value="">Seleccione {stockMovementForm.type === 'entrada' ? 'un proveedor' : 'un cliente'}</option>
+                      {stockMovementForm.type === 'entrada' 
+                        ? suppliers.map(supplier => (
+                            <option key={supplier.id} value={supplier.id}>
+                              {supplier.name}
+                            </option>
+                          ))
+                        : clients.map(client => (
+                            <option key={client.id} value={client.id}>
+                              {client.name}
+                            </option>
+                          ))
+                      }
+                    </select>
                   </div>
                   
                   <div className="space-y-2">
@@ -381,7 +429,11 @@ const ProductDetail = () => {
                   </DialogClose>
                   <Button 
                     onClick={handleStockMovement}
-                    disabled={loading || stockMovementForm.quantity <= 0 || !stockMovementForm.supplierOrClient.trim()}
+                    disabled={loading || 
+                      stockMovementForm.quantity <= 0 || 
+                      (stockMovementForm.type === 'entrada' && !stockMovementForm.supplierId) ||
+                      (stockMovementForm.type === 'salida' && !stockMovementForm.clientId)
+                    }
                     className={
                       stockMovementForm.type === 'entrada' 
                         ? 'bg-green-600 hover:bg-green-700' 
