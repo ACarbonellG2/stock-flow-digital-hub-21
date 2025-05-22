@@ -32,7 +32,7 @@ const AddProduct = () => {
     category: '',
     type: 'Producto Terminado' as 'Insumos' | 'Producto Terminado',
     quantity: '',
-    price: '',
+    costo: '',
     description: '',
     sku: '',
     clientId: '',
@@ -169,9 +169,9 @@ const AddProduct = () => {
       newErrors.quantity = 'La cantidad debe ser un número positivo';
     }
     
-    const price = Number(formData.price);
-    if (isNaN(price) || price <= 0) {
-      newErrors.price = 'El precio debe ser mayor a cero';
+    const costo = Number(formData.costo);
+    if (isNaN(costo) || costo <= 0) {
+      newErrors.costo = 'El costo debe ser mayor a cero';
     }
     
     if (!formData.sku.trim()) {
@@ -193,7 +193,7 @@ const AddProduct = () => {
       const productData = {
         ...formData,
         quantity: Number(formData.quantity),
-        price: Number(formData.price)
+        price: Number(formData.costo)
       };
       
       await addProduct(productData);
@@ -406,22 +406,22 @@ const AddProduct = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="price" className={errors.price ? 'text-red-500' : ''}>
-                  Precio *
+                <Label htmlFor="costo" className={errors.costo ? 'text-red-500' : ''}>
+                  Costo *
                 </Label>
                 <Input
-                  id="price"
-                  name="price"
+                  id="costo"
+                  name="costo"
                   type="number"
                   min="0"
                   step="0.01"
-                  value={formData.price}
+                  value={formData.costo}
                   onChange={handleInputChange}
-                  placeholder="Ingresa el precio"
-                  className={errors.price ? 'border-red-500' : ''}
+                  placeholder="Ingresa el costo"
+                  className={errors.costo ? 'border-red-500' : ''}
                 />
-                {errors.price && (
-                  <p className="text-red-500 text-xs">{errors.price}</p>
+                {errors.costo && (
+                  <p className="text-red-500 text-xs">{errors.costo}</p>
                 )}
               </div>
 

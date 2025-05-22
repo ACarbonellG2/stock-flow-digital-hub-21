@@ -50,7 +50,7 @@ const Products = () => {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [stockFilter, setStockFilter] = useState('');
-  const [priceFilter, setPriceFilter] = useState('');
+  const [costoFilter, setCostoFilter] = useState('');
   const [clientFilter, setClientFilter] = useState('');
   const [clients, setClients] = useState<{id: string, name: string}[]>([]);
   const [clientsLoaded, setClientsLoaded] = useState(false);
@@ -149,11 +149,11 @@ const Products = () => {
       if (stockFilter === 'alto' && product.quantity < 30) return false;
     }
     
-    // Filtro de precio
-    if (priceFilter) {
-      if (priceFilter === 'economico' && product.price >= 30000) return false;
-      if (priceFilter === 'intermedio' && (product.price < 30000 || product.price >= 70000)) return false;
-      if (priceFilter === 'premium' && product.price < 70000) return false;
+    // Filtro de costo (antes precio)
+    if (costoFilter) {
+      if (costoFilter === 'economico' && product.price >= 30000) return false;
+      if (costoFilter === 'intermedio' && (product.price < 30000 || product.price >= 70000)) return false;
+      if (costoFilter === 'premium' && product.price < 70000) return false;
     }
     
     // Filtro de cliente
@@ -229,10 +229,10 @@ const Products = () => {
             </div>
             
             <div className="flex items-center gap-2">
-              <span className="font-medium">Precio:</span>
+              <span className="font-medium">Costo:</span>
               <select
-                value={priceFilter}
-                onChange={e => setPriceFilter(e.target.value)}
+                value={costoFilter}
+                onChange={e => setCostoFilter(e.target.value)}
                 className="border rounded px-2 py-1 text-sm"
               >
                 <option value="">Todos</option>
@@ -333,7 +333,7 @@ const Products = () => {
                           onClick={() => sortProducts('price')}
                         >
                           <div className="flex items-center justify-end">
-                            Precio
+                            Costo
                             {sortField === 'price' && (
                               <ArrowUpDown className="ml-2 h-4 w-4" />
                             )}
