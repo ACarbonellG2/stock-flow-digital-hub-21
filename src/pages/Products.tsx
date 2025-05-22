@@ -6,7 +6,8 @@ import {
   filterProducts,
   categories,
   Product,
-  types
+  types,
+  getClients
 } from '@/lib/mockData';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -38,25 +39,21 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-// Mock client data
-const mockClients = [
-  { id: '1', name: 'Empresa A' },
-  { id: '2', name: 'Empresa B' },
-  { id: '3', name: 'Corporación XYZ' },
-];
-
 const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [category, setCategory] = useState('');
-  const [productType, setProductType] = useState('');
-  const [client, setClient] = useState('');
   const [sortField, setSortField] = useState<keyof Product>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [loading, setLoading] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [stockFilter, setStockFilter] = useState('');
+  const [priceFilter, setPriceFilter] = useState('');
+  const [clientFilter, setClientFilter] = useState('');
+  const [clients, setClients] = useState<{id: string, name: string}[]>([]);
+  const [clientsLoaded, setClientsLoaded] = useState(false);
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
@@ -79,6 +76,24 @@ const Products = () => {
     loadProducts();
   }, [loadProducts]);
 
+  // Cargar clientes de forma segura
+  useEffect(() => {
+    const loadClients = async () => {
+      try {
+        const data = await getClients();
+        setClients(data);
+      } catch (error) {
+        console.error('Error al cargar clientes:', error);
+        // Si hay error, al menos establecer un array vacío para evitar errores
+        setClients([]);
+      } finally {
+        setClientsLoaded(true);
+      }
+    };
+    
+    loadClients();
+  }, []);
+
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
       setFilteredProducts(products);
@@ -97,47 +112,6 @@ const Products = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleFilter = async () => {
-    console.log('Aplicando filtros:', { category, productType, client });
-    setLoading(true);
-    setError(null);
-    
-    // Si no hay filtros seleccionados, mostrar todos los productos
-    if (!category && !productType && !client) {
-      console.log('No hay filtros seleccionados, mostrando todos los productos');
-      setFilteredProducts(products);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      console.log('Llamando a filterProducts...');
-      const data = await filterProducts({ 
-        category,
-        productType,
-        client
-      });
-      console.log('Datos filtrados recibidos:', data);
-      setFilteredProducts(data);
-    } catch (error) {
-      console.error('Error al filtrar productos:', error);
-      setError('Error al aplicar los filtros. Por favor, intenta de nuevo.');
-      setFilteredProducts(products); // En caso de error, mostrar todos los productos
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resetFilters = () => {
-    console.log('Reseteando filtros...');
-    setCategory('');
-    setProductType('');
-    setClient('');
-    setSearchQuery('');
-    setError(null);
-    setFilteredProducts(products);
   };
 
   const sortProducts = (field: keyof Product) => {
@@ -160,12 +134,33 @@ const Products = () => {
     }
   };
 
-  // Agregar efecto para aplicar filtros cuando cambian los valores
-  useEffect(() => {
-    if (showFilters) {
-      handleFilter();
+  // Filtrado simple por múltiples criterios
+  const filtered = filteredProducts.filter(product => {
+    // Filtro de categoría
+    if (categoryFilter && product.category !== categoryFilter) return false;
+    
+    // Filtro de tipo
+    if (typeFilter && product.type !== typeFilter) return false;
+    
+    // Filtro de stock
+    if (stockFilter) {
+      if (stockFilter === 'bajo' && product.quantity >= 10) return false;
+      if (stockFilter === 'medio' && (product.quantity < 10 || product.quantity >= 30)) return false;
+      if (stockFilter === 'alto' && product.quantity < 30) return false;
     }
-  }, [category, productType, client]);
+    
+    // Filtro de precio
+    if (priceFilter) {
+      if (priceFilter === 'economico' && product.price >= 30000) return false;
+      if (priceFilter === 'intermedio' && (product.price < 30000 || product.price >= 70000)) return false;
+      if (priceFilter === 'premium' && product.price < 70000) return false;
+    }
+    
+    // Filtro de cliente
+    if (clientFilter && product.clientId !== clientFilter) return false;
+    
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -186,108 +181,100 @@ const Products = () => {
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
               <p className="text-red-600">{error}</p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-2"
-                onClick={resetFilters}
-              >
-                Intentar de nuevo
-              </Button>
             </div>
           )}
 
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="flex w-full">
-              <Input
-                placeholder="Buscar por nombre, SKU, categoría o descripción"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleSearchKeyDown}
-                className="rounded-r-none focus-visible:ring-0 focus-visible:ring-offset-0"
-              />
-              <Button 
-                onClick={handleSearch} 
-                className="rounded-l-none bg-inventory-600 hover:bg-inventory-700"
+          {/* Filtros sencillos */}
+          <div className="mb-4 flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="font-medium">Categoría:</span>
+              <select
+                value={categoryFilter}
+                onChange={e => setCategoryFilter(e.target.value)}
+                className="border rounded px-2 py-1 text-sm"
               >
-                <Search className="h-4 w-4" />
-              </Button>
+                <option value="">Todas</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
             </div>
-            <Button 
-              variant="outline" 
-              className="md:w-auto" 
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter className="h-4 w-4 mr-2" /> Filtros
-            </Button>
+            
+            <div className="flex items-center gap-2">
+              <span className="font-medium">Tipo:</span>
+              <select
+                value={typeFilter}
+                onChange={e => setTypeFilter(e.target.value)}
+                className="border rounded px-2 py-1 text-sm"
+              >
+                <option value="">Todos</option>
+                {types.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <span className="font-medium">Stock:</span>
+              <select
+                value={stockFilter}
+                onChange={e => setStockFilter(e.target.value)}
+                className="border rounded px-2 py-1 text-sm"
+              >
+                <option value="">Todos</option>
+                <option value="bajo">Bajo (&lt;10)</option>
+                <option value="medio">Medio (10-29)</option>
+                <option value="alto">Alto (30+)</option>
+              </select>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <span className="font-medium">Precio:</span>
+              <select
+                value={priceFilter}
+                onChange={e => setPriceFilter(e.target.value)}
+                className="border rounded px-2 py-1 text-sm"
+              >
+                <option value="">Todos</option>
+                <option value="economico">Económico (&lt;$30,000)</option>
+                <option value="intermedio">Intermedio ($30,000-$69,999)</option>
+                <option value="premium">Premium ($70,000+)</option>
+              </select>
+            </div>
+            
+            {clientsLoaded && (
+              <div className="flex items-center gap-2">
+                <span className="font-medium">Cliente:</span>
+                <select
+                  value={clientFilter}
+                  onChange={e => setClientFilter(e.target.value)}
+                  className="border rounded px-2 py-1 text-sm"
+                >
+                  <option value="">Todos</option>
+                  {clients.map(client => (
+                    <option key={client.id} value={client.id}>{client.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
-          {showFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Categoría
-                </label>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todas las categorías" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Todas las categorías</SelectItem>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Tipo de Producto
-                </label>
-                <Select value={productType} onValueChange={setProductType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todos los tipos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Todos los tipos</SelectItem>
-                    {types.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Cliente
-                </label>
-                <Select value={client} onValueChange={setClient}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todos los clientes" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Todos los clientes</SelectItem>
-                    {mockClients.map((cl) => (
-                      <SelectItem key={cl.id} value={cl.id}>
-                        {cl.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-end gap-2 md:col-span-3">
-                <Button onClick={handleFilter} className="bg-inventory-600 hover:bg-inventory-700">
-                  Aplicar Filtros
-                </Button>
-                <Button variant="outline" onClick={resetFilters}>
-                  <X className="h-4 w-4 mr-2" /> Limpiar
-                </Button>
-              </div>
-            </div>
-          )}
+          {/* Barra de búsqueda */}
+          <div className="flex w-full mb-6">
+            <Input
+              placeholder="Buscar por nombre, SKU, categoría o descripción"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              className="rounded-r-none focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+            <Button 
+              onClick={handleSearch} 
+              className="rounded-l-none bg-inventory-600 hover:bg-inventory-700"
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+          </div>
 
           {loading ? (
             <div className="flex justify-center items-center py-12">
@@ -295,7 +282,7 @@ const Products = () => {
             </div>
           ) : (
             <>
-              {filteredProducts.length > 0 ? (
+              {filtered.length > 0 ? (
                 <div className="rounded-md border overflow-hidden">
                   <Table>
                     <TableHeader>
@@ -356,7 +343,7 @@ const Products = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredProducts.map((product) => (
+                      {filtered.map((product) => (
                         <TableRow key={product.id}>
                           <TableCell className="font-medium">{product.sku}</TableCell>
                           <TableCell>{product.name}</TableCell>
@@ -368,12 +355,9 @@ const Products = () => {
                           </TableCell>
                           <TableCell>
                             {product.clientId ? (
-                              <div className="flex items-center">
-                                <Building2 className="h-3 w-3 mr-1 text-inventory-600" />
-                                <span className="text-sm">
-                                  {mockClients.find(cl => cl.id === product.clientId)?.name || 'Cliente Desconocido'}
-                                </span>
-                              </div>
+                              <span className="text-sm">
+                                {clients.find(c => c.id === product.clientId)?.name || product.clientId}
+                              </span>
                             ) : (
                               <span className="text-sm text-gray-500">Sin asignar</span>
                             )}
@@ -411,17 +395,8 @@ const Products = () => {
                   <Package className="mx-auto h-12 w-12 text-gray-400" />
                   <h3 className="mt-2 text-lg font-medium text-gray-900">No se encontraron productos</h3>
                   <p className="mt-1 text-gray-500">
-                    Intenta con otros filtros o agrega nuevos productos al inventario.
+                    Intenta con otro filtro o agrega nuevos productos al inventario.
                   </p>
-                  <div className="mt-6">
-                    <Button 
-                      onClick={resetFilters} 
-                      variant="outline" 
-                      className="mx-auto"
-                    >
-                      Limpiar filtros
-                    </Button>
-                  </div>
                 </div>
               )}
             </>
