@@ -4,7 +4,6 @@ export interface Product {
   category: string;
   type: 'Insumos' | 'Producto Terminado';  // New field for product type
   quantity: number;
-  price: number;
   description: string;
   sku: string;
   lastUpdated: string;
@@ -38,7 +37,6 @@ export const mockProducts: Product[] = [
     category: "Camisas",
     type: "Producto Terminado",
     quantity: 120,
-    price: 45000,
     description: "Camisa corporativa de manga larga con logo bordado",
     sku: "CAM-ML-001",
     lastUpdated: "2025-05-08T14:30:00Z",
@@ -51,7 +49,6 @@ export const mockProducts: Product[] = [
     category: "Camisas",
     type: "Producto Terminado",
     quantity: 85,
-    price: 38000,
     description: "Camisa corporativa de manga corta con logo estampado",
     sku: "CAM-MC-002",
     lastUpdated: "2025-05-07T10:15:00Z",
@@ -64,7 +61,6 @@ export const mockProducts: Product[] = [
     category: "Gorras",
     type: "Producto Terminado",
     quantity: 200,
-    price: 22000,
     description: "Gorra con logo empresarial bordado en alta calidad",
     sku: "GOR-BOR-003",
     lastUpdated: "2025-05-08T09:45:00Z",
@@ -76,7 +72,6 @@ export const mockProducts: Product[] = [
     category: "Overoles",
     type: "Producto Terminado",
     quantity: 45,
-    price: 85000,
     description: "Overol industrial resistente de material denim",
     sku: "OVE-DEN-004",
     lastUpdated: "2025-05-06T16:20:00Z",
@@ -88,7 +83,6 @@ export const mockProducts: Product[] = [
     category: "Delantales",
     type: "Producto Terminado",
     quantity: 60,
-    price: 28000,
     description: "Delantal de cocina profesional resistente a manchas",
     sku: "DEL-COC-005",
     lastUpdated: "2025-05-08T11:10:00Z",
@@ -100,7 +94,6 @@ export const mockProducts: Product[] = [
     category: "Chalecos",
     type: "Producto Terminado",
     quantity: 75,
-    price: 32000,
     description: "Chaleco reflectivo con tiras de alta visibilidad",
     sku: "CHA-REF-006",
     lastUpdated: "2025-05-07T14:50:00Z",
@@ -112,7 +105,6 @@ export const mockProducts: Product[] = [
     category: "Maletas",
     type: "Producto Terminado",
     quantity: 50,
-    price: 55000,
     description: "Mochila corporativa con compartimiento para laptop",
     sku: "MAL-COR-007",
     lastUpdated: "2025-05-05T10:30:00Z",
@@ -124,7 +116,6 @@ export const mockProducts: Product[] = [
     category: "Uniformes",
     type: "Producto Terminado",
     quantity: 30,
-    price: 120000,
     description: "Conjunto completo de uniforme administrativo",
     sku: "UNI-ADM-008",
     lastUpdated: "2025-05-04T09:15:00Z",
@@ -136,7 +127,6 @@ export const mockProducts: Product[] = [
     category: "Camisetas",
     type: "Producto Terminado",
     quantity: 150,
-    price: 35000,
     description: "Camiseta polo con logo empresarial bordado",
     sku: "POL-BOR-009",
     lastUpdated: "2025-05-07T15:40:00Z",
@@ -148,7 +138,6 @@ export const mockProducts: Product[] = [
     category: "Chaquetas",
     type: "Producto Terminado",
     quantity: 25,
-    price: 98000,
     description: "Chaqueta corporativa impermeable para uso exterior",
     sku: "CHA-IMP-010",
     lastUpdated: "2025-05-03T13:20:00Z",
@@ -160,7 +149,6 @@ export const mockProducts: Product[] = [
     category: "Telas",
     type: "Insumos",
     quantity: 500,
-    price: 15000,
     description: "Tela de algodón de alta calidad para camisas",
     sku: "TEL-ALG-011",
     lastUpdated: "2025-05-02T11:20:00Z",
@@ -172,7 +160,6 @@ export const mockProducts: Product[] = [
     category: "Botones",
     type: "Insumos",
     quantity: 1000,
-    price: 200,
     description: "Botones plásticos negros de 1cm de diámetro",
     sku: "BOT-PLA-012",
     lastUpdated: "2025-05-01T09:45:00Z",
@@ -184,7 +171,6 @@ export const mockProducts: Product[] = [
     category: "Cremalleras",
     type: "Insumos",
     quantity: 300,
-    price: 1500,
     description: "Cremalleras metálicas de 20cm para chaquetas",
     sku: "CRE-MET-013",
     lastUpdated: "2025-04-30T14:30:00Z",
@@ -196,7 +182,6 @@ export const mockProducts: Product[] = [
     category: "Caucho",
     type: "Insumos",
     quantity: 50,
-    price: 18000,
     description: "Láminas de caucho de 2mm para suelas",
     sku: "CAU-LAM-014",
     lastUpdated: "2025-04-29T10:15:00Z",
@@ -208,7 +193,6 @@ export const mockProducts: Product[] = [
     category: "Lonas",
     type: "Insumos",
     quantity: 100,
-    price: 22000,
     description: "Lona impermeable azul para maletas y mochilas",
     sku: "LON-IMP-015",
     lastUpdated: "2025-04-28T16:20:00Z",
@@ -371,6 +355,8 @@ export const addProduct = async (product: Omit<Product, 'id' | 'lastUpdated' | '
   };
   
   mockProducts.push(newProduct);
+  products.push(newProduct);
+  
   return newProduct;
 };
 

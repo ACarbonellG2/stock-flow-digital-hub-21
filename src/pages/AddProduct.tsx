@@ -32,7 +32,6 @@ const AddProduct = () => {
     category: '',
     type: 'Producto Terminado' as 'Insumos' | 'Producto Terminado',
     quantity: '',
-    costo: '',
     description: '',
     sku: '',
     clientId: '',
@@ -169,11 +168,6 @@ const AddProduct = () => {
       newErrors.quantity = 'La cantidad debe ser un número positivo';
     }
     
-    const costo = Number(formData.costo);
-    if (isNaN(costo) || costo <= 0) {
-      newErrors.costo = 'El costo debe ser mayor a cero';
-    }
-    
     if (!formData.sku.trim()) {
       newErrors.sku = 'El SKU es obligatorio';
     }
@@ -192,8 +186,7 @@ const AddProduct = () => {
       // Convert string values to numbers for submission
       const productData = {
         ...formData,
-        quantity: Number(formData.quantity),
-        price: Number(formData.costo)
+        quantity: Number(formData.quantity)
       };
       
       await addProduct(productData);
@@ -402,26 +395,6 @@ const AddProduct = () => {
                 />
                 {errors.quantity && (
                   <p className="text-red-500 text-xs">{errors.quantity}</p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="costo" className={errors.costo ? 'text-red-500' : ''}>
-                  Costo *
-                </Label>
-                <Input
-                  id="costo"
-                  name="costo"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.costo}
-                  onChange={handleInputChange}
-                  placeholder="Ingresa el costo"
-                  className={errors.costo ? 'border-red-500' : ''}
-                />
-                {errors.costo && (
-                  <p className="text-red-500 text-xs">{errors.costo}</p>
                 )}
               </div>
 

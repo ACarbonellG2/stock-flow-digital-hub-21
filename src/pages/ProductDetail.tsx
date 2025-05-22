@@ -313,10 +313,6 @@ const ProductDetail = () => {
                 <p className="mt-1">{product.type}</p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500">Precio</h3>
-                <p className="mt-1">$ {product.price.toLocaleString()}</p>
-              </div>
-              <div>
                 <h3 className="text-sm font-medium text-gray-500">Existencias</h3>
                 <p className="mt-1">{product.quantity} unidades</p>
               </div>

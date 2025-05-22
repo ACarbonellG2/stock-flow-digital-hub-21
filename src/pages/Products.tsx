@@ -47,13 +47,12 @@ const Products = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [clientFilter, setClientFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [stockFilter, setStockFilter] = useState('');
-  const [costoFilter, setCostoFilter] = useState('');
-  const [clientFilter, setClientFilter] = useState('');
-  const [clients, setClients] = useState<{id: string, name: string}[]>([]);
   const [clientsLoaded, setClientsLoaded] = useState(false);
+  const [clients, setClients] = useState<{id: string, name: string}[]>([]);
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
@@ -149,13 +148,6 @@ const Products = () => {
       if (stockFilter === 'alto' && product.quantity < 30) return false;
     }
     
-    // Filtro de costo (antes precio)
-    if (costoFilter) {
-      if (costoFilter === 'economico' && product.price >= 30000) return false;
-      if (costoFilter === 'intermedio' && (product.price < 30000 || product.price >= 70000)) return false;
-      if (costoFilter === 'premium' && product.price < 70000) return false;
-    }
-    
     // Filtro de cliente
     if (clientFilter && product.clientId !== clientFilter) return false;
     
@@ -225,20 +217,6 @@ const Products = () => {
                 <option value="bajo">Bajo (&lt;10)</option>
                 <option value="medio">Medio (10-29)</option>
                 <option value="alto">Alto (30+)</option>
-              </select>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <span className="font-medium">Costo:</span>
-              <select
-                value={costoFilter}
-                onChange={e => setCostoFilter(e.target.value)}
-                className="border rounded px-2 py-1 text-sm"
-              >
-                <option value="">Todos</option>
-                <option value="economico">Económico (&lt;$30,000)</option>
-                <option value="intermedio">Intermedio ($30,000-$69,999)</option>
-                <option value="premium">Premium ($70,000+)</option>
               </select>
             </div>
             
@@ -328,17 +306,6 @@ const Products = () => {
                             )}
                           </div>
                         </TableHead>
-                        <TableHead 
-                          className="text-right cursor-pointer"
-                          onClick={() => sortProducts('price')}
-                        >
-                          <div className="flex items-center justify-end">
-                            Costo
-                            {sortField === 'price' && (
-                              <ArrowUpDown className="ml-2 h-4 w-4" />
-                            )}
-                          </div>
-                        </TableHead>
                         <TableHead className="text-right">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -374,9 +341,6 @@ const Products = () => {
                             >
                               {product.quantity}
                             </span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            ${product.price.toLocaleString()}
                           </TableCell>
                           <TableCell className="text-right">
                             <Link to={`/products/${product.id}`}>
